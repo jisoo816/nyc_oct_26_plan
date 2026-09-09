@@ -3,3 +3,4 @@ folium
 streamlit-folium
 geopy
 streamlit-sortables
+st.dataframe

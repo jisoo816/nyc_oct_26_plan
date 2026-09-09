@@ -1,5 +1,6 @@
 import folium
 from geopy.geocoders import Nominatim
+import pandas as pd
 import streamlit as st
 from streamlit_folium import st_folium
 from streamlit_sortables import sort_items
@@ -13,7 +14,7 @@ st.set_page_config(
 # -------------------------------------------------------------
 # 1. 지오코더 설정 (주소 -> 위경도 변환 캐싱)
 # -------------------------------------------------------------
-geolocator = Nominatim(user_agent="nyc_bachelorette_planner_v2")
+geolocator = Nominatim(user_agent="nyc_bachelorette_planner_v3")
 
 
 @st.cache_data(show_spinner=False)
@@ -28,7 +29,7 @@ def get_coordinates(address):
 
 
 # -------------------------------------------------------------
-# 2. 기본 장소 데이터 & 카테고리 스타일 정의
+# 2. 기본 데이터 & 카테고리 스타일
 # -------------------------------------------------------------
 CATEGORY_STYLE = {
     "호텔": {"emoji": "🏨", "bg": "#1E88E5"},
@@ -45,18 +46,21 @@ DEFAULT_PLACES = [
         "address": "119 W 56th St, New York, NY 10019",
         "desc": "숙소 & 짐 보관",
         "category": "호텔",
+        "time": "12:00 PM",
     },
     {
         "name": "Apollo Bagels",
         "address": "224 W 35th St, New York, NY 10001",
         "desc": "베이글 테이크아웃",
         "category": "음식",
+        "time": "02:00 PM",
     },
     {
         "name": "Madison Square Garden",
         "address": "4 Pennsylvania Plaza, New York, NY 10001",
         "desc": "몬스타엑스 콘서트",
         "category": "콘서트/엔터",
+        "time": "07:30 PM",
     },
 ]
 
@@ -64,29 +68,27 @@ if "custom_places" not in st.session_state:
     st.session_state.custom_places = DEFAULT_PLACES
 
 # -------------------------------------------------------------
-# 3. 탭 구성
+# 3. 메인 탭 구성
 # -------------------------------------------------------------
 tab_schedule, tab_manage = st.tabs(
     ["🗓️ 일정 & 동선 지도", "➕ 내 장소 추가/관리"]
 )
 
 # -------------------------------------------------------------
-# TAB 1: 일정표 & 드래그 앤 드롭 동선 맵
+# TAB 1: 3단 레이아웃 (편집 | 엑셀 테이블 | 지도)
 # -------------------------------------------------------------
 with tab_schedule:
-    col_schedule, col_map = st.columns([1.1, 1.2], gap="large")
+    col_order, col_table, col_map = st.columns([0.8, 1.2, 1.2], gap="medium")
 
-    with col_schedule:
-        st.subheader("🗓️ 동선 순서 편집 (Drag & Drop)")
-        st.caption(
-            "👇 마우스로 카드를 끌어서 순서를 바꾸면 오른쪽 지도의 경로와 번호가 자동으로 재정렬돼요."
-        )
+    # [1열] 드래그 앤 드롭 순서 변경
+    with col_order:
+        st.markdown("#### 🔀 순서 편집")
+        st.caption("카드를 끌어서 순서를 변경하세요.")
 
-        # 드래그 앤 드롭 목록 항목 생성
         place_names = [p["name"] for p in st.session_state.custom_places]
         sorted_names = sort_items(place_names, direction="vertical")
 
-        # 사용자가 드래그해서 바꾼 순서대로 세션 데이터 동기화
+        # 드래그 결과 반영
         st.session_state.custom_places = sorted(
             st.session_state.custom_places,
             key=lambda x: (
@@ -97,19 +99,61 @@ with tab_schedule:
         )
 
         st.divider()
-        st.markdown("#### 📋 1박 2일 고정 타임라인")
+        draw_line = st.checkbox("동선 점선 표시", value=True)
+
+    # [2열] 엑셀 스타일 일정표 테이블
+    with col_table:
+        st.markdown("#### 📊 일정표 (Schedule Sheet)")
+
+        # 데이터프레임 생성
+        table_data = []
+        for idx, p in enumerate(st.session_state.custom_places, start=1):
+            emoji = CATEGORY_STYLE.get(p.get("category", ""), {}).get(
+                "emoji", "📍"
+            )
+            table_data.append(
+                {
+                    "순번": f"#{idx}",
+                    "예상시간": p.get("time", "-"),
+                    "장소 (Location)": f"{emoji} {p['name']}",
+                    "구분": p.get("category", ""),
+                    "노트 / 활동내용": p.get("desc", ""),
+                }
+            )
+
+        df = pd.DataFrame(table_data)
+
+        # 엑셀 스타일 인터랙티브 테이블 렌더링
+        st.dataframe(
+            df,
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "순번": st.column_config.TextColumn("순번", width="small"),
+                "예상시간": st.column_config.TextColumn(
+                    "시간", width="small"
+                ),
+                "장소 (Location)": st.column_config.TextColumn(
+                    "장소 (Location)", width="medium"
+                ),
+                "구분": st.column_config.TextColumn("구분", width="small"),
+                "노트 / 활동내용": st.column_config.TextColumn(
+                    "노트", width="large"
+                ),
+            },
+        )
+
         st.markdown(
             """
-            * **10/6 (화)**: ATL 출발(08:11 AM) ➔ EWR 도착(10:32 AM) ➔ 체크인 & K-타운 ➔ **08:00 PM 콘서트 (MSG)**
-            * **10/7 (수)**: 호텔 조식 & 짐 보관 ➔ 웨스트 빌리지 투어 ➔ 짐 픽업 ➔ **06:30 PM 공항 이동**
+            > **10/6 (화):** ATL 출발(08:11 AM) ➔ EWR 도착(10:32 AM) ➔ K-타운 ➔ **08:00 PM 콘서트 (MSG)**  
+            > **10/7 (수):** 조식 & 짐보관 ➔ 웨스트 빌리지 ➔ 짐 픽업 ➔ **06:30 PM 공항 이동**
             """
         )
-        draw_line = st.checkbox("동선 연결선 지도에 표시", value=True)
 
+    # [3열] 지도 렌더링
     with col_map:
-        st.subheader("🗺️ 저장된 동선 맵")
+        st.markdown("#### 🗺️ 동선 맵")
 
-        # 좌표 변환 및 지도 중심 계산
         coords_list = []
         valid_items = []
         for idx, p in enumerate(st.session_state.custom_places, start=1):
@@ -129,13 +173,10 @@ with tab_schedule:
 
         m = folium.Map(location=center, zoom_start=13, tiles="OpenStreetMap")
 
-        # 커스텀 뱃지 마커 렌더링 (순서 번호 + 이모지)
         for idx, p, coord in valid_items:
             style = CATEGORY_STYLE.get(
                 p["category"], {"emoji": "📍", "bg": "#333333"}
             )
-
-            # 세련된 원형 뱃지 HTML 디자인
             marker_html = f"""
             <div style="
                 background-color: {style['bg']};
@@ -155,7 +196,6 @@ with tab_schedule:
                 <span>#{idx}</span>
             </div>
             """
-
             folium.Marker(
                 location=coord,
                 tooltip=f"#{idx} {p['name']}",
@@ -166,7 +206,6 @@ with tab_schedule:
                 icon=folium.DivIcon(html=marker_html),
             ).add_to(m)
 
-        # 동선 점선 연결
         if draw_line and len(coords_list) > 1:
             folium.PolyLine(
                 locations=coords_list,
@@ -176,23 +215,24 @@ with tab_schedule:
                 dash_array="6, 6",
             ).add_to(m)
 
-        st_folium(m, width="100%", height=560)
+        st_folium(m, width="100%", height=520)
 
 # -------------------------------------------------------------
-# TAB 2: 장소 추가 및 삭제 관리
+# TAB 2: 새 장소 추가 및 삭제 관리
 # -------------------------------------------------------------
 with tab_manage:
     st.subheader("📍 새 장소 추가하기")
 
     with st.form("add_place_form", clear_on_submit=True):
         f_name = st.text_input(
-            "장소 이름", placeholder="예: L'Industrie Pizzeria West Village"
+            "장소 이름", placeholder="예: EWR Newark Liberty Airport"
         )
         f_address = st.text_input(
             "상세 주소",
-            placeholder="예: 104 Christopher St, New York, NY 10014",
+            placeholder="예: 3 Brewster Rd, Newark, NJ 07114",
         )
-        f_desc = st.text_input("메모", placeholder="예: 부라타 조각 피자 픽업")
+        f_time = st.text_input("예상 시간", placeholder="예: 10:32 AM 도착")
+        f_desc = st.text_input("메모", placeholder="예: 공항 랜딩 후 우버 탑승")
         f_cat = st.selectbox("카테고리", list(CATEGORY_STYLE.keys()))
 
         submitted = st.form_submit_button("추가하기")
@@ -207,6 +247,7 @@ with tab_manage:
                             {
                                 "name": f_name,
                                 "address": f_address,
+                                "time": f_time,
                                 "desc": f_desc,
                                 "category": f_cat,
                             }

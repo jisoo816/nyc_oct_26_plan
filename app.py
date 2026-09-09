@@ -12,22 +12,29 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------------
-# 0. 모바일 최적화 커스텀 CSS (상단 패딩 확보 및 가독성 개선)
+# 0. 모바일 가로 깨짐 방지 및 초슬림 패딩 CSS
 # -------------------------------------------------------------
 st.markdown(
     """
     <style>
     .block-container { 
-        padding-top: 4.5rem !important; 
+        padding-top: 4.2rem !important; 
         padding-bottom: 2rem !important;
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
     }
     
     button[data-baseweb="tab"] {
-        font-size: 14px !important;
+        font-size: 13px !important;
         font-weight: 700 !important;
-        padding: 8px 10px !important;
+        padding: 6px 8px !important;
+    }
+
+    /* 모바일 컬럼 줄바꿈 방지 */
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
+        align-items: center !important;
     }
 
     div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label, div[data-testid="stCheckbox"] label {
@@ -37,21 +44,35 @@ st.markdown(
         margin-bottom: 0px !important;
     }
     
+    /* 인풋창 내부 높이 및 여백 축소 */
+    div[data-testid="stTextInput"] input {
+        padding: 2px 6px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        font-size: 12px !important;
+    }
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+        min-height: 32px !important;
+        height: 32px !important;
+        font-size: 12px !important;
+    }
+    
+    /* 카드 컨테이너 극소화 */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        padding: 10px !important;
-        margin-bottom: 8px !important;
-        border-radius: 12px !important;
+        padding: 6px 8px !important;
+        margin-bottom: 6px !important;
+        border-radius: 10px !important;
         background: #181c24 !important;
         border: 1px solid #2a313d !important;
     }
     
+    /* 버튼 컴팩트화 */
     div[data-testid="stButton"] button {
-        padding: 4px 6px !important;
-        height: 38px !important;
-        min-height: 38px !important;
-        font-size: 13px !important;
-        font-weight: bold !important;
-        border-radius: 8px !important;
+        padding: 0px 4px !important;
+        height: 30px !important;
+        min-height: 30px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
     }
     </style>
     """,
@@ -61,7 +82,7 @@ st.markdown(
 # -------------------------------------------------------------
 # 1. 지오코더 설정 (Photon)
 # -------------------------------------------------------------
-geolocator = Photon(user_agent="nyc_bachelorette_mobile_v3")
+geolocator = Photon(user_agent="nyc_bachelorette_mobile_v4")
 
 
 @st.cache_data(show_spinner=False)
@@ -195,7 +216,7 @@ if "row_counter" not in st.session_state:
     st.session_state.row_counter = 100
 
 # -------------------------------------------------------------
-# 3. 날짜 선택 바 (날짜 추가 버튼 제거)
+# 3. 날짜 라디오
 # -------------------------------------------------------------
 day_list = list(st.session_state.days_data.keys())
 curr_idx = (
@@ -212,7 +233,7 @@ selected_day = st.radio(
 st.session_state.current_day = selected_day
 
 # -------------------------------------------------------------
-# 4. 상단 3개 탭 구성
+# 4. 상단 3개 탭
 # -------------------------------------------------------------
 tab_view, tab_edit, tab_places = st.tabs(
     ["🗓️ 일정표 & 동선 지도", "✏️ 일정 카드 편집", "📍 장소 보관함 관리"]
@@ -222,10 +243,9 @@ active_rows = st.session_state.days_data[st.session_state.current_day]
 place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
 
 # =============================================================
-# TAB 1: 🗓️ 일정표 & 동선 지도 (조회 모드: 요약표 + 지도)
+# TAB 1: 🗓️ 조회 모드
 # =============================================================
 with tab_view:
-    # 1. 엑셀 스타일 타임라인 요약표
     st.markdown(f"#### 📊 {st.session_state.current_day} 타임라인")
     table_data = []
     for idx, r in enumerate(active_rows, start=1):
@@ -261,7 +281,6 @@ with tab_view:
 
     st.divider()
 
-    # 2. 동선 지도
     st.markdown(f"#### 🗺️ {st.session_state.current_day} 동선 맵")
     draw_line = st.checkbox("경로 점선 연결", value=True)
 
@@ -358,11 +377,10 @@ with tab_view:
     st_folium(m, width="100%", height=520)
 
 # =============================================================
-# TAB 2: ✏️ 일정 카드 편집 (순서 이동, 추가, 수정 전담)
+# TAB 2: ✏️ 초슬림 모바일 카드 편집
 # =============================================================
 with tab_edit:
     st.markdown(f"#### ✏️ {st.session_state.current_day} 일정 편집")
-    st.caption("카드의 시간을 바꾸거나 ▲/▼ 버튼으로 순서를 변경하세요.")
 
     move_up_idx = None
     move_down_idx = None
@@ -376,37 +394,34 @@ with tab_edit:
             row["show_on_map"] = True
 
         with st.container(border=True):
-            # 1행: [#순번] [지도체크] [시간 Start ~ End] [버튼 그룹]
-            c_num, c_map, c_time, c_btns = st.columns([0.6, 0.6, 2.5, 2.5])
+            # 1줄: [#순번] [🗺️] [Start] [~] [End] [▲] [▼] [+] [✖] (절대 세로로 떨어지지 않음)
+            c_num, c_map, c_s, c_t, c_e, c_u, c_d, c_add, c_del = st.columns(
+                [0.7, 0.6, 2.0, 0.3, 2.0, 0.8, 0.8, 0.8, 0.8]
+            )
             with c_num:
-                st.markdown(f"<div style='line-height:36px; font-weight:800; font-size:14px;'>#{idx + 1}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='line-height:30px; font-weight:800; font-size:13px;'>#{idx + 1}</div>", unsafe_allow_html=True)
             with c_map:
-                st.write("")
-                row["show_on_map"] = st.checkbox("지도", value=row["show_on_map"], key=f"m_{r_id}", help="지도 표시 여부")
-            with c_time:
-                t1, t_tilde, t2 = st.columns([1.1, 0.2, 1.1])
-                with t1:
-                    row["start_time"] = st.text_input("시작", value=row.get("start_time", ""), key=f"s_{r_id}", placeholder="Start")
-                with t_tilde:
-                    st.markdown("<div style='text-align:center; line-height:36px; color:#64748b;'>~</div>", unsafe_allow_html=True)
-                with t2:
-                    row["end_time"] = st.text_input("종료", value=row.get("end_time", ""), key=f"e_{r_id}", placeholder="End")
-            with c_btns:
-                b_u, b_d, b_in, b_x = st.columns([1, 1, 1, 1])
-                with b_u:
-                    if st.button("▲", key=f"up_{r_id}", disabled=(idx == 0)):
-                        move_up_idx = idx
-                with b_d:
-                    if st.button("▼", key=f"down_{r_id}", disabled=(idx == len(active_rows) - 1)):
-                        move_down_idx = idx
-                with b_in:
-                    if st.button("+↓", key=f"add_{r_id}", help="아래에 추가"):
-                        insert_below_idx = idx
-                with b_x:
-                    if st.button("✖", key=f"del_{r_id}"):
-                        delete_idx = idx
+                row["show_on_map"] = st.checkbox("지도", value=row["show_on_map"], key=f"m_{r_id}", help="지도 표시")
+            with c_s:
+                row["start_time"] = st.text_input("S", value=row.get("start_time", ""), key=f"s_{r_id}", placeholder="Start")
+            with c_t:
+                st.markdown("<div style='text-align:center; line-height:30px; color:#64748b;'>~</div>", unsafe_allow_html=True)
+            with c_e:
+                row["end_time"] = st.text_input("E", value=row.get("end_time", ""), key=f"e_{r_id}", placeholder="End")
+            with c_u:
+                if st.button("▲", key=f"up_{r_id}", disabled=(idx == 0)):
+                    move_up_idx = idx
+            with c_d:
+                if st.button("▼", key=f"down_{r_id}", disabled=(idx == len(active_rows) - 1)):
+                    move_down_idx = idx
+            with c_add:
+                if st.button("+", key=f"add_{r_id}", help="아래에 행 추가"):
+                    insert_below_idx = idx
+            with c_del:
+                if st.button("✖", key=f"del_{r_id}"):
+                    delete_idx = idx
 
-            # 2행: 장소 선택
+            # 2줄: [장소 선택 드롭다운]
             row["place"] = st.selectbox(
                 "장소",
                 options=place_options,
@@ -414,7 +429,7 @@ with tab_edit:
                 key=f"p_{r_id}",
             )
 
-            # 3행: 활동 메모
+            # 3줄: [메모 입력]
             row["note"] = st.text_input(
                 "메모",
                 value=row.get("note", ""),
@@ -451,7 +466,7 @@ with tab_edit:
         st.rerun()
 
 # =============================================================
-# TAB 3: 📍 장소 보관함 관리 (검색 추가, 직접 추가, 수정/삭제)
+# TAB 3: 📍 장소 보관함 관리
 # =============================================================
 with tab_places:
     st.subheader("📍 장소 보관함 관리")

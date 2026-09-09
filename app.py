@@ -14,7 +14,7 @@ st.set_page_config(
 # -------------------------------------------------------------
 # 1. 지오코더 설정 (주소 -> 위경도 변환 캐싱)
 # -------------------------------------------------------------
-geolocator = Nominatim(user_agent="nyc_bachelorette_planner_v3")
+geolocator = Nominatim(user_agent="nyc_bachelorette_planner_v4")
 
 
 @st.cache_data(show_spinner=False)
@@ -29,7 +29,7 @@ def get_coordinates(address):
 
 
 # -------------------------------------------------------------
-# 2. 기본 데이터 & 카테고리 스타일
+# 2. 카테고리 스타일 정의 (마커 뱃지용)
 # -------------------------------------------------------------
 CATEGORY_STYLE = {
     "호텔": {"emoji": "🏨", "bg": "#1E88E5"},
@@ -68,27 +68,27 @@ if "custom_places" not in st.session_state:
     st.session_state.custom_places = DEFAULT_PLACES
 
 # -------------------------------------------------------------
-# 3. 메인 탭 구성
+# 3. 메인 화면 탭 구성
 # -------------------------------------------------------------
 tab_schedule, tab_manage = st.tabs(
     ["🗓️ 일정 & 동선 지도", "➕ 내 장소 추가/관리"]
 )
 
 # -------------------------------------------------------------
-# TAB 1: 3단 레이아웃 (편집 | 엑셀 테이블 | 지도)
+# TAB 1: 3단 레이아웃 (드래그앤드롭 | 수정 가능한 엑셀 표 | 지도)
 # -------------------------------------------------------------
 with tab_schedule:
-    col_order, col_table, col_map = st.columns([0.8, 1.2, 1.2], gap="medium")
+    col_order, col_table, col_map = st.columns([0.7, 1.4, 1.2], gap="medium")
 
-    # [1열] 드래그 앤 드롭 순서 변경
+    # [1열] 드래그 앤 드롭으로 장소 순서 정렬
     with col_order:
-        st.markdown("#### 🔀 순서 편집")
-        st.caption("카드를 끌어서 순서를 변경하세요.")
+        st.markdown("#### 🔀 장소 드래그")
+        st.caption("카드를 끌어서 원하는 방문 순번으로 배치하세요.")
 
         place_names = [p["name"] for p in st.session_state.custom_places]
         sorted_names = sort_items(place_names, direction="vertical")
 
-        # 드래그 결과 반영
+        # 드래그된 순서에 맞춰 리스트 재정렬
         st.session_state.custom_places = sorted(
             st.session_state.custom_places,
             key=lambda x: (
@@ -101,47 +101,56 @@ with tab_schedule:
         st.divider()
         draw_line = st.checkbox("동선 점선 표시", value=True)
 
-    # [2열] 엑셀 스타일 일정표 테이블
+    # [2열] 자유롭게 수정 가능한 엑셀 스타일 테이블 (구분 컬럼 제거됨)
     with col_table:
         st.markdown("#### 📊 일정표 (Schedule Sheet)")
+        st.caption(
+            "💡 순번, 시간, 노트를 엑셀처럼 더블클릭해서 직접 수정할 수 있어요."
+        )
 
-        # 데이터프레임 생성
-        table_data = []
+        # 테이블 데이터 생성 (드래그 순서가 반영된 장소가 row에 순서대로 꽂힘)
+        table_rows = []
         for idx, p in enumerate(st.session_state.custom_places, start=1):
             emoji = CATEGORY_STYLE.get(p.get("category", ""), {}).get(
                 "emoji", "📍"
             )
-            table_data.append(
+            table_rows.append(
                 {
                     "순번": f"#{idx}",
-                    "예상시간": p.get("time", "-"),
+                    "시간": p.get("time", ""),
                     "장소 (Location)": f"{emoji} {p['name']}",
-                    "구분": p.get("category", ""),
-                    "노트 / 활동내용": p.get("desc", ""),
+                    "노트": p.get("desc", ""),
                 }
             )
 
-        df = pd.DataFrame(table_data)
+        df = pd.DataFrame(table_rows)
 
-        # 엑셀 스타일 인터랙티브 테이블 렌더링
-        st.dataframe(
+        # 엑셀처럼 직접 셀 편집이 가능한 data_editor
+        edited_df = st.data_editor(
             df,
             hide_index=True,
             use_container_width=True,
+            disabled=["장소 (Location)"],  # 장소는 왼쪽 드래그로 자동 매핑
             column_config={
                 "순번": st.column_config.TextColumn("순번", width="small"),
-                "예상시간": st.column_config.TextColumn(
-                    "시간", width="small"
+                "시간": st.column_config.TextColumn(
+                    "시간", width="medium"
                 ),
                 "장소 (Location)": st.column_config.TextColumn(
-                    "장소 (Location)", width="medium"
+                    "장소 (Location)", width="large"
                 ),
-                "구분": st.column_config.TextColumn("구분", width="small"),
-                "노트 / 활동내용": st.column_config.TextColumn(
+                "노트": st.column_config.TextColumn(
                     "노트", width="large"
                 ),
             },
+            key="schedule_editor",
         )
+
+        # 사용자가 표에서 직접 수정한 '시간'과 '노트'를 session_state에 즉시 동기화
+        for idx, row in edited_df.iterrows():
+            if idx < len(st.session_state.custom_places):
+                st.session_state.custom_places[idx]["time"] = row["시간"]
+                st.session_state.custom_places[idx]["desc"] = row["노트"]
 
         st.markdown(
             """
@@ -173,9 +182,10 @@ with tab_schedule:
 
         m = folium.Map(location=center, zoom_start=13, tiles="OpenStreetMap")
 
+        # 뱃지 마커
         for idx, p, coord in valid_items:
             style = CATEGORY_STYLE.get(
-                p["category"], {"emoji": "📍", "bg": "#333333"}
+                p.get("category", ""), {"emoji": "📍", "bg": "#333333"}
             )
             marker_html = f"""
             <div style="
@@ -206,6 +216,7 @@ with tab_schedule:
                 icon=folium.DivIcon(html=marker_html),
             ).add_to(m)
 
+        # 동선 경로 점선
         if draw_line and len(coords_list) > 1:
             folium.PolyLine(
                 locations=coords_list,
@@ -231,9 +242,9 @@ with tab_manage:
             "상세 주소",
             placeholder="예: 3 Brewster Rd, Newark, NJ 07114",
         )
-        f_time = st.text_input("예상 시간", placeholder="예: 10:32 AM 도착")
-        f_desc = st.text_input("메모", placeholder="예: 공항 랜딩 후 우버 탑승")
-        f_cat = st.selectbox("카테고리", list(CATEGORY_STYLE.keys()))
+        f_time = st.text_input("시간", placeholder="예: 10:32 AM")
+        f_desc = st.text_input("노트", placeholder="예: 공항 착륙 후 맨해튼 우버 이동")
+        f_cat = st.selectbox("마커 아이콘 카테고리", list(CATEGORY_STYLE.keys()))
 
         submitted = st.form_submit_button("추가하기")
         if submitted:

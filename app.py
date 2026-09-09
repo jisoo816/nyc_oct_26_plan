@@ -338,21 +338,21 @@ with tab_places:
         st.write("")
         st.write("")
         if st.button("🔍 검색", use_container_width=True):
-                if search_query.strip():
-                    with st.spinner("위치 찾는 중..."):
-                        try:
-                            # Photon은 오타와 복합 명칭을 알아서 처리함
-                            results = geolocator.geocode(
-                                search_query.strip(), exactly_one=False, limit=5
+            if search_query.strip():
+                with st.spinner("위치 찾는 중..."):
+                    try:
+                        # Photon은 오타와 복합 명칭을 알아서 처리함
+                        results = geolocator.geocode(
+                            search_query.strip(), exactly_one=False, limit=5
+                        )
+                        if results:
+                            st.session_state.search_results = results
+                        else:
+                            st.warning(
+                                "결과를 찾지 못했습니다. 키워드를 조금만 줄여보세요."
                             )
-                            if results:
-                                st.session_state.search_results = results
-                            else:
-                                st.warning(
-                                    "결과를 찾지 못했습니다. 키워드를 조금만 줄여보세요."
-                                )
-                        except Exception:
-                            st.error("검색 중 일시적인 오류가 발생했습니다.")
+                    except Exception:
+                        st.error("검색 중 일시적인 오류가 발생했습니다.")
             else:
                 st.warning("검색할 장소 이름을 입력해 주세요.")
 

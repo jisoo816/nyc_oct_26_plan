@@ -11,18 +11,34 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------------
-# 0. 커스텀 CSS (여백 극소화 & 버튼 인라인 정렬)
+# 0. 커스텀 CSS (탭 잘림 수정, 여백 및 인라인 정렬 최적화)
 # -------------------------------------------------------------
 st.markdown(
     """
     <style>
-    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
-    div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label {
+    /* 상단 패딩을 넉넉히 주어 탭 텍스트 잘림 현상 방지 */
+    .block-container { 
+        padding-top: 3.5rem !important; 
+        padding-bottom: 2rem !important; 
+    }
+    
+    /* 탭 헤더 영역 스타일 */
+    button[data-baseweb="tab"] {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+    }
+
+    /* 입력 라벨 숨김 및 여백 축소 */
+    div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label, div[data-testid="stCheckbox"] label {
         display: none !important;
     }
-    div[data-testid="stTextInput"], div[data-testid="stSelectbox"] {
+    div[data-testid="stTextInput"], div[data-testid="stSelectbox"], div[data-testid="stCheckbox"] {
         margin-bottom: 0px !important;
     }
+    
+    /* 카드 컨테이너 */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         padding: 8px 12px !important;
         margin-bottom: 8px !important;
@@ -30,8 +46,10 @@ st.markdown(
         background: #181c24 !important;
         border: 1px solid #2a313d !important;
     }
+    
+    /* 조작 버튼 컴팩트화 */
     div[data-testid="stButton"] button {
-        padding: 0px 4px !important;
+        padding: 0px 2px !important;
         height: 34px !important;
         min-height: 34px !important;
         font-size: 11px !important;
@@ -45,7 +63,7 @@ st.markdown(
 # -------------------------------------------------------------
 # 1. 지오코더 설정 (Photon Fuzzy Search)
 # -------------------------------------------------------------
-geolocator = Photon(user_agent="nyc_bachelorette_planner_v11")
+geolocator = Photon(user_agent="nyc_bachelorette_planner_v12")
 
 
 @st.cache_data(show_spinner=False)
@@ -74,6 +92,10 @@ CATEGORY_STYLE = {
 # -------------------------------------------------------------
 if "place_pool" not in st.session_state:
     st.session_state.place_pool = {
+        "ATL 공항": {
+            "address": "6000 N Terminal Pkwy, Atlanta, GA 30320",
+            "category": "공항",
+        },
         "Newark Liberty International Airport": {
             "address": "3 Brewster Rd, Newark, NJ 07114",
             "category": "공항",
@@ -100,11 +122,20 @@ if "days_data" not in st.session_state:
     st.session_state.days_data = {
         "10/6 (화)": [
             {
+                "id": "row_106_0",
+                "start_time": "08:11 AM",
+                "end_time": "10:32 AM",
+                "place": "ATL 공항",
+                "note": "Frontier #2282 탑승 (ATL → EWR)",
+                "show_on_map": False,  # 타주 공항이므로 기본 지도 비표시
+            },
+            {
                 "id": "row_106_1",
                 "start_time": "10:32 AM",
                 "end_time": "11:30 AM",
                 "place": "Newark Liberty International Airport",
-                "note": "Frontier #2282 도착 후 맨해튼 우버 이동",
+                "note": "도착 후 맨해튼 우버 이동",
+                "show_on_map": True,
             },
             {
                 "id": "row_106_2",
@@ -112,6 +143,7 @@ if "days_data" not in st.session_state:
                 "end_time": "12:30 PM",
                 "place": "Thompson Central Park",
                 "note": "체크인 및 짐 보관",
+                "show_on_map": True,
             },
             {
                 "id": "row_106_3",
@@ -119,6 +151,7 @@ if "days_data" not in st.session_state:
                 "end_time": "02:30 PM",
                 "place": "Apollo Bagels",
                 "note": "베이글 테이크아웃",
+                "show_on_map": True,
             },
             {
                 "id": "row_106_4",
@@ -126,6 +159,7 @@ if "days_data" not in st.session_state:
                 "end_time": "10:30 PM",
                 "place": "Madison Square Garden",
                 "note": "몬스타엑스 콘서트 관람",
+                "show_on_map": True,
             },
         ],
         "10/7 (수)": [
@@ -135,6 +169,7 @@ if "days_data" not in st.session_state:
                 "end_time": "09:30 AM",
                 "place": "Thompson Central Park",
                 "note": "체크아웃 & 호텔 짐 보관",
+                "show_on_map": True,
             },
             {
                 "id": "row_107_2",
@@ -142,6 +177,7 @@ if "days_data" not in st.session_state:
                 "end_time": "01:30 PM",
                 "place": "Buvette",
                 "note": "웨스트 빌리지 브런치",
+                "show_on_map": True,
             },
             {
                 "id": "row_107_3",
@@ -149,6 +185,7 @@ if "days_data" not in st.session_state:
                 "end_time": "06:15 PM",
                 "place": "Thompson Central Park",
                 "note": "호텔 짐 픽업 후 공항 출발",
+                "show_on_map": True,
             },
         ],
     }
@@ -165,13 +202,13 @@ if "row_counter" not in st.session_state:
 tab_main, tab_places = st.tabs(["🗓️ 일정표 & 동선 지도", "📍 등록된 장소 풀 관리"])
 
 # -------------------------------------------------------------
-# TAB 1: 초슬림 카드형 일정표 + [상단 요약표 | 하단 지도]
+# TAB 1: [1.0 (좌측 일정 카드)] : [1.4 (우측 요약표 + 지도 넓게)]
 # -------------------------------------------------------------
 with tab_main:
-    col_schedule, col_map = st.columns([1.18, 1.22], gap="medium")
+    col_schedule, col_map = st.columns([1.0, 1.4], gap="large")
 
     with col_schedule:
-        c_day_select, c_day_add = st.columns([3, 1.1])
+        c_day_select, c_day_add = st.columns([3, 1.2])
         with c_day_select:
             day_list = list(st.session_state.days_data.keys())
             curr_idx = (
@@ -203,7 +240,7 @@ with tab_main:
         active_rows = st.session_state.days_data[st.session_state.current_day]
         place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
 
-        # 인덱스 액션 플래그
+        # 이동 / 추가 / 삭제 플래그
         move_up_idx = None
         move_down_idx = None
         delete_idx = None
@@ -215,15 +252,28 @@ with tab_main:
             curr_place = (
                 row["place"] if row["place"] in place_options else "(장소 없음)"
             )
+            # 기본값 True 처리
+            if "show_on_map" not in row:
+                row["show_on_map"] = True
 
             with st.container(border=True):
-                # 1행: [#순번] [Start] [~] [End] [장소 드롭다운] [버튼들: +↑, +↓, ▲, ▼, ✖]
-                c_num, c_s, c_t, c_e, c_plc, c_btns = st.columns(
-                    [0.55, 1.0, 0.15, 1.0, 2.3, 2.2]
+                # 1행: [#순번] [지도체크] [Start] [~] [End] [장소] [버튼들]
+                c_num, c_map_chk, c_s, c_t, c_e, c_plc, c_btns = st.columns(
+                    [0.45, 0.45, 0.9, 0.12, 0.9, 2.1, 2.1]
                 )
 
                 with c_num:
-                    st.markdown(f"<div style='line-height:34px; font-weight:800; font-size:14px;'>#{idx + 1}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='line-height:34px; font-weight:800; font-size:13px;'>#{idx + 1}</div>", unsafe_allow_html=True)
+
+                with c_map_chk:
+                    # 지도 표시 체크박스 (툴팁 제공)
+                    st.write("")
+                    row["show_on_map"] = st.checkbox(
+                        "지도 표시",
+                        value=row["show_on_map"],
+                        key=f"map_chk_{r_id}",
+                        help="체크 해제 시 지도/동선에서 제외됩니다.",
+                    )
 
                 with c_s:
                     row["start_time"] = st.text_input(
@@ -267,7 +317,7 @@ with tab_main:
                         if st.button("✖", key=f"del_{r_id}", help="삭제"):
                             delete_idx = idx
 
-                # 2행: 활동 내용/메모
+                # 2행: 활동 메모
                 row["note"] = st.text_input(
                     "메모",
                     value=row.get("note", ""),
@@ -275,29 +325,35 @@ with tab_main:
                     placeholder="활동 내용이나 팁을 입력하세요",
                 )
 
-        # 액션 처리
+        # 액션 적용
         if insert_above_idx is not None:
             st.session_state.row_counter += 1
-            new_card = {
-                "id": f"row_{st.session_state.row_counter}",
-                "start_time": "",
-                "end_time": "",
-                "place": "(장소 없음)",
-                "note": "",
-            }
-            active_rows.insert(insert_above_idx, new_card)
+            active_rows.insert(
+                insert_above_idx,
+                {
+                    "id": f"row_{st.session_state.row_counter}",
+                    "start_time": "",
+                    "end_time": "",
+                    "place": "(장소 없음)",
+                    "note": "",
+                    "show_on_map": True,
+                },
+            )
             st.rerun()
 
         if insert_below_idx is not None:
             st.session_state.row_counter += 1
-            new_card = {
-                "id": f"row_{st.session_state.row_counter}",
-                "start_time": "",
-                "end_time": "",
-                "place": "(장소 없음)",
-                "note": "",
-            }
-            active_rows.insert(insert_below_idx + 1, new_card)
+            active_rows.insert(
+                insert_below_idx + 1,
+                {
+                    "id": f"row_{st.session_state.row_counter}",
+                    "start_time": "",
+                    "end_time": "",
+                    "place": "(장소 없음)",
+                    "note": "",
+                    "show_on_map": True,
+                },
+            )
             st.rerun()
 
         if move_up_idx is not None:
@@ -322,11 +378,12 @@ with tab_main:
                         "end_time": "",
                         "place": "(장소 없음)",
                         "note": "",
+                        "show_on_map": True,
                     }
                 )
                 st.rerun()
 
-    # 우측: [1] 엑셀 스타일 요약 테이블 + [2] 동선 지도
+    # 우측: [1] 엑셀 스타일 요약 테이블 + [2] 넓어진 동선 맵
     with col_map:
         active_rows = st.session_state.days_data[st.session_state.current_day]
 
@@ -342,10 +399,12 @@ with tab_main:
             s_time = r.get("start_time", "").strip()
             e_time = r.get("end_time", "").strip()
             time_display = f"{s_time} ~ {e_time}".strip(" ~") if (s_time or e_time) else "-"
+            map_status = "🗺️ O" if r.get("show_on_map", True) and p_name != "(장소 없음)" else "X"
 
             table_data.append(
                 {
                     "순번": f"#{idx}",
+                    "지도": map_status,
                     "시간": time_display,
                     "장소": f"{emoji} {p_name}" if p_name != "(장소 없음)" else "-",
                     "내용 / 노트": r.get("note", "") or "-",
@@ -359,6 +418,7 @@ with tab_main:
             use_container_width=True,
             column_config={
                 "순번": st.column_config.TextColumn("순번", width="small"),
+                "지도": st.column_config.TextColumn("지도", width="small"),
                 "시간": st.column_config.TextColumn("시간", width="medium"),
                 "장소": st.column_config.TextColumn("장소", width="medium"),
                 "내용 / 노트": st.column_config.TextColumn("내용 / 노트", width="large"),
@@ -374,7 +434,12 @@ with tab_main:
         coords_list = []
         map_points = []
 
+        map_seq = 1
         for idx, row in enumerate(active_rows, start=1):
+            # 사용자가 체크한 항목만 지도에 렌더링
+            if not row.get("show_on_map", True):
+                continue
+
             p_name = row["place"]
             if p_name != "(장소 없음)" and p_name in st.session_state.place_pool:
                 p_info = st.session_state.place_pool[p_name]
@@ -384,7 +449,8 @@ with tab_main:
                     time_display = f"{row.get('start_time', '')} ~ {row.get('end_time', '')}".strip(" ~")
                     map_points.append(
                         {
-                            "seq": idx,
+                            "seq": map_seq,
+                            "original_idx": idx,
                             "name": p_name,
                             "time_str": time_display if time_display else "시간 미정",
                             "note": row.get("note", ""),
@@ -393,6 +459,7 @@ with tab_main:
                             "coord": coord,
                         }
                     )
+                    map_seq += 1
 
         center = (
             [
@@ -480,7 +547,7 @@ with tab_main:
                 dash_array="6, 6",
             ).add_to(m)
 
-        st_folium(m, width="100%", height=520)
+        st_folium(m, width="100%", height=550)
 
 # -------------------------------------------------------------
 # TAB 2: 등록된 장소 풀 관리 (수정 & 삭제 지원)
@@ -595,7 +662,6 @@ with tab_places:
             )
 
         with c2:
-            # 팝오버를 통한 인라인 수정
             with st.popover("✏️ 수정", use_container_width=True):
                 st.markdown(f"**'{p_name}' 정보 수정**")
                 edit_name = st.text_input("장소 이름", value=p_name, key=f"edit_name_{p_name}")
@@ -607,7 +673,6 @@ with tab_places:
 
                 if st.button("저장", key=f"save_{p_name}", type="primary", use_container_width=True):
                     if edit_name.strip() and edit_addr.strip():
-                        # 이름이 바뀌었으면 키 교체 및 일정표 데이터 연동
                         if edit_name != p_name:
                             del st.session_state.place_pool[p_name]
                             for d in st.session_state.days_data.values():
@@ -625,7 +690,6 @@ with tab_places:
         with c3:
             if st.button("삭제", key=f"del_pool_{p_name}", use_container_width=True):
                 del st.session_state.place_pool[p_name]
-                # 일정표에서 해당 장소를 쓰던 행은 (장소 없음)으로 리셋
                 for d in st.session_state.days_data.values():
                     for row in d:
                         if row.get("place") == p_name:

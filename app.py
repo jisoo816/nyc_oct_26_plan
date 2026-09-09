@@ -2,7 +2,6 @@ import folium
 from geopy.geocoders import Photon
 import streamlit as st
 from streamlit_folium import st_folium
-from streamlit_sortables import sort_items
 
 st.set_page_config(
     page_title="NYC Bachelorette Trip 2026",
@@ -13,7 +12,7 @@ st.set_page_config(
 # -------------------------------------------------------------
 # 1. 지오코더 설정 (Photon Fuzzy Search)
 # -------------------------------------------------------------
-geolocator = Photon(user_agent="nyc_bachelorette_planner_v7")
+geolocator = Photon(user_agent="nyc_bachelorette_planner_v8")
 
 
 @st.cache_data(show_spinner=False)
@@ -28,7 +27,7 @@ def get_coordinates(address):
 
 
 # -------------------------------------------------------------
-# 2. 카테고리 스타일 정의 (공항 ✈️ 추가)
+# 2. 카테고리 스타일 정의
 # -------------------------------------------------------------
 CATEGORY_STYLE = {
     "공항": {"emoji": "✈️", "bg": "#0284C7"},
@@ -41,7 +40,7 @@ CATEGORY_STYLE = {
 }
 
 # -------------------------------------------------------------
-# 3. 세션 상태 초기화
+# 3. 세션 상태 초기화 (날짜별 일정 구조)
 # -------------------------------------------------------------
 if "place_pool" not in st.session_state:
     st.session_state.place_pool = {
@@ -61,133 +60,196 @@ if "place_pool" not in st.session_state:
             "address": "4 Pennsylvania Plaza, New York, NY 10001",
             "category": "콘서트/엔터",
         },
+        "Buvette": {
+            "address": "42 Grove St, New York, NY 10014",
+            "category": "음식",
+        },
     }
 
-if "schedule_rows" not in st.session_state:
-    st.session_state.schedule_rows = [
-        {
-            "id": "row_1",
-            "start_time": "10:32 AM",
-            "end_time": "11:30 AM",
-            "place": "Newark Liberty International Airport",
-            "note": "Frontier #2282 도착 후 맨해튼 우버 이동",
-        },
-        {
-            "id": "row_2",
-            "start_time": "12:00 PM",
-            "end_time": "12:30 PM",
-            "place": "Thompson Central Park",
-            "note": "체크인 및 짐 보관",
-        },
-        {
-            "id": "row_3",
-            "start_time": "01:30 PM",
-            "end_time": "02:30 PM",
-            "place": "Apollo Bagels",
-            "note": "베이글 테이크아웃",
-        },
-        {
-            "id": "row_4",
-            "start_time": "07:30 PM",
-            "end_time": "10:30 PM",
-            "place": "Madison Square Garden",
-            "note": "몬스타엑스 콘서트 관람",
-        },
-    ]
+if "days_data" not in st.session_state:
+    st.session_state.days_data = {
+        "10/6 (화)": [
+            {
+                "id": "row_106_1",
+                "start_time": "10:32 AM",
+                "end_time": "11:30 AM",
+                "place": "Newark Liberty International Airport",
+                "note": "Frontier #2282 도착 후 맨해튼 우버 이동",
+            },
+            {
+                "id": "row_106_2",
+                "start_time": "12:00 PM",
+                "end_time": "12:30 PM",
+                "place": "Thompson Central Park",
+                "note": "체크인 및 짐 보관",
+            },
+            {
+                "id": "row_106_3",
+                "start_time": "01:30 PM",
+                "end_time": "02:30 PM",
+                "place": "Apollo Bagels",
+                "note": "베이글 테이크아웃",
+            },
+            {
+                "id": "row_106_4",
+                "start_time": "07:30 PM",
+                "end_time": "10:30 PM",
+                "place": "Madison Square Garden",
+                "note": "몬스타엑스 콘서트 관람",
+            },
+        ],
+        "10/7 (수)": [
+            {
+                "id": "row_107_1",
+                "start_time": "08:30 AM",
+                "end_time": "09:30 AM",
+                "place": "Thompson Central Park",
+                "note": "체크아웃 & 호텔 짐 보관",
+            },
+            {
+                "id": "row_107_2",
+                "start_time": "11:30 AM",
+                "end_time": "01:30 PM",
+                "place": "Buvette",
+                "note": "웨스트 빌리지 브런치",
+            },
+            {
+                "id": "row_107_3",
+                "start_time": "05:45 PM",
+                "end_time": "06:15 PM",
+                "place": "Thompson Central Park",
+                "note": "호텔 짐 픽업 후 공항 출발",
+            },
+        ],
+    }
+
+if "current_day" not in st.session_state:
+    st.session_state.current_day = list(st.session_state.days_data.keys())[0]
 
 if "row_counter" not in st.session_state:
-    st.session_state.row_counter = len(st.session_state.schedule_rows) + 1
+    st.session_state.row_counter = 100
 
 # -------------------------------------------------------------
-# 4. 탭 구성
+# 4. 상단 탭 구성
 # -------------------------------------------------------------
 tab_main, tab_places = st.tabs(["🗓️ 일정표 & 동선 지도", "📍 등록된 장소 풀 관리"])
 
 # -------------------------------------------------------------
-# TAB 1: 드래그 앤 드롭 일정표 + 실시간 지도
+# TAB 1: 통합 카드형 일정표 + 동선 지도
 # -------------------------------------------------------------
 with tab_main:
-    col_schedule, col_map = st.columns([1.35, 1.15], gap="large")
+    col_schedule, col_map = st.columns([1.3, 1.1], gap="large")
 
     with col_schedule:
-        st.subheader("📋 일정 순서 드래그 앤 드롭")
-        st.caption("👇 아래 카드들을 마우스로 위아래 끌어서 순서를 변경하세요.")
+        # 1. 날짜 선택 및 새 날짜 추가
+        c_day_select, c_day_add = st.columns([3, 1.2])
+        with c_day_select:
+            day_list = list(st.session_state.days_data.keys())
+            curr_idx = day_list.index(st.session_state.current_day) if st.session_state.current_day in day_list else 0
+            selected_day = st.radio(
+                "📅 날짜 선택",
+                options=day_list,
+                index=curr_idx,
+                horizontal=True,
+            )
+            st.session_state.current_day = selected_day
 
-        # 고유 ID 기반 드래그 앤 드롭 리스트 생성
-        items_for_sort = [
-            f"{r['id']} | {r.get('start_time','')}~{r.get('end_time','')} | {r.get('place','(장소 없음)')}"
-            for r in st.session_state.schedule_rows
-        ]
+        with c_day_add:
+            with st.popover("➕ 날짜 추가"):
+                new_date_label = st.text_input("새 날짜 명칭", placeholder="예: 10/8 (목)")
+                if st.button("날짜 생성", use_container_width=True):
+                    if new_date_label.strip() and new_date_label not in st.session_state.days_data:
+                        st.session_state.days_data[new_date_label.strip()] = []
+                        st.session_state.current_day = new_date_label.strip()
+                        st.rerun()
 
-        sorted_items = sort_items(items_for_sort, direction="vertical")
+        st.caption("💡 각 카드의 ▲ / ▼ 버튼으로 순서를 바로 바꿀 수 있습니다.")
 
-        # 드래그된 순서대로 row 재정렬
-        sorted_ids = [item.split(" | ")[0] for item in sorted_items]
-        id_to_row = {r["id"]: r for r in st.session_state.schedule_rows}
-        st.session_state.schedule_rows = [id_to_row[rid] for rid in sorted_ids if rid in id_to_row]
-
-        st.divider()
-        st.markdown("#### ✏️ 각 행 세부 정보 입력")
-
+        # 2. 현재 선택된 날짜의 일정 카드 리스트
+        active_rows = st.session_state.days_data[st.session_state.current_day]
         place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
-        rows_to_delete = []
+        
+        move_up_idx = None
+        move_down_idx = None
+        delete_idx = None
 
-        for idx, row_data in enumerate(st.session_state.schedule_rows):
-            r_id = row_data["id"]
+        for idx, row in enumerate(active_rows):
+            r_id = row["id"]
             with st.container(border=True):
-                c_num, c_start, c_end, c_place, c_del = st.columns([0.7, 1.3, 1.3, 2.7, 0.6])
+                # 카드 헤더 (순번 + 시작/종료 시간 + 이동/삭제 버튼)
+                c_num, c_start, c_end, c_up, c_down, c_del = st.columns([0.8, 1.3, 1.3, 0.45, 0.45, 0.45])
 
                 with c_num:
                     st.markdown(f"### #{idx + 1}")
 
                 with c_start:
-                    row_data["start_time"] = st.text_input(
+                    row["start_time"] = st.text_input(
                         "Start",
-                        value=row_data.get("start_time", ""),
+                        value=row.get("start_time", ""),
                         key=f"start_{r_id}",
-                        placeholder="08:00 AM",
-                    )
-
-                with c_end:
-                    row_data["end_time"] = st.text_input(
-                        "End",
-                        value=row_data.get("end_time", ""),
-                        key=f"end_{r_id}",
                         placeholder="10:00 AM",
                     )
 
-                with c_place:
-                    curr_place = row_data["place"] if row_data["place"] in place_options else "(장소 없음)"
-                    row_data["place"] = st.selectbox(
-                        "장소 지정",
-                        options=place_options,
-                        index=place_options.index(curr_place),
-                        key=f"place_{r_id}",
+                with c_end:
+                    row["end_time"] = st.text_input(
+                        "End",
+                        value=row.get("end_time", ""),
+                        key=f"end_{r_id}",
+                        placeholder="11:30 AM",
                     )
+
+                with c_up:
+                    st.write("")
+                    st.write("")
+                    if st.button("▲", key=f"btn_up_{r_id}", help="위로 올리기", disabled=(idx == 0)):
+                        move_up_idx = idx
+
+                with c_down:
+                    st.write("")
+                    st.write("")
+                    if st.button("▼", key=f"btn_down_{r_id}", help="아래로 내리기", disabled=(idx == len(active_rows) - 1)):
+                        move_down_idx = idx
 
                 with c_del:
                     st.write("")
                     st.write("")
-                    if st.button("✖", key=f"del_{r_id}", help="행 삭제"):
-                        rows_to_delete.append(idx)
+                    if st.button("✖", key=f"btn_del_{r_id}", help="이 카드 삭제"):
+                        delete_idx = idx
 
-                row_data["note"] = st.text_input(
-                    "활동 내용 / 세부 메모",
-                    value=row_data.get("note", ""),
-                    key=f"note_{r_id}",
-                    placeholder="상세 일정을 입력하세요",
+                # 장소 지정 드롭다운
+                curr_place = row["place"] if row["place"] in place_options else "(장소 없음)"
+                row["place"] = st.selectbox(
+                    "장소 선택",
+                    options=place_options,
+                    index=place_options.index(curr_place),
+                    key=f"place_{r_id}",
                 )
 
-        # 삭제 대상 처리
-        if rows_to_delete:
-            for d_idx in sorted(rows_to_delete, reverse=True):
-                st.session_state.schedule_rows.pop(d_idx)
+                # 활동 내용 / 메모
+                row["note"] = st.text_input(
+                    "활동 내용 / 세부 메모",
+                    value=row.get("note", ""),
+                    key=f"note_{r_id}",
+                    placeholder="활동 내용 및 팁 입력",
+                )
+
+        # 위/아래 이동 및 삭제 처리
+        if move_up_idx is not None:
+            active_rows[move_up_idx - 1], active_rows[move_up_idx] = active_rows[move_up_idx], active_rows[move_up_idx - 1]
             st.rerun()
 
-        # 새로운 행 추가
-        if st.button("➕ 새로운 일정 행 추가하기", use_container_width=True):
+        if move_down_idx is not None:
+            active_rows[move_down_idx + 1], active_rows[move_down_idx] = active_rows[move_down_idx], active_rows[move_down_idx + 1]
+            st.rerun()
+
+        if delete_idx is not None:
+            active_rows.pop(delete_idx)
+            st.rerun()
+
+        # 새 일정 카드 추가 버튼
+        if st.button("➕ 새로운 일정 카드 추가", use_container_width=True):
             st.session_state.row_counter += 1
-            st.session_state.schedule_rows.append(
+            active_rows.append(
                 {
                     "id": f"row_{st.session_state.row_counter}",
                     "start_time": "",
@@ -199,16 +261,17 @@ with tab_main:
             st.rerun()
 
         st.divider()
-        draw_line = st.checkbox("지도에 동선 점선 연결하기", value=True)
+        draw_line = st.checkbox("지도에 경로 점선 연결하기", value=True)
 
-    # 우측 지도
+    # 3. 우측 지도 영역
     with col_map:
-        st.subheader("🗺️ 실시간 동선 맵")
+        st.subheader(f"🗺️ {st.session_state.current_day} 동선 맵")
 
         coords_list = []
         map_points = []
 
-        for idx, row in enumerate(st.session_state.schedule_rows, start=1):
+        active_rows = st.session_state.days_data[st.session_state.current_day]
+        for idx, row in enumerate(active_rows, start=1):
             p_name = row["place"]
             if p_name != "(장소 없음)" and p_name in st.session_state.place_pool:
                 p_info = st.session_state.place_pool[p_name]
@@ -317,7 +380,7 @@ with tab_main:
         st_folium(m, width="100%", height=620)
 
 # -------------------------------------------------------------
-# TAB 2: 등록된 장소 풀 관리 (공항 카테고리 지원)
+# TAB 2: 등록된 장소 풀 관리
 # -------------------------------------------------------------
 with tab_places:
     st.subheader("📍 장소 보관함에 추가하기")

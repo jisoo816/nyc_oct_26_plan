@@ -11,18 +11,16 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------------
-# 0. 커스텀 CSS (탭 잘림 수정, 여백 및 인라인 정렬 최적화)
+# 0. 커스텀 CSS (탭 잘림 수정, 불필요한 패딩 제거, 버튼 시인성 최적화)
 # -------------------------------------------------------------
 st.markdown(
     """
     <style>
-    /* 상단 패딩을 넉넉히 주어 탭 텍스트 잘림 현상 방지 */
     .block-container { 
-        padding-top: 3.5rem !important; 
+        padding-top: 3.2rem !important; 
         padding-bottom: 2rem !important; 
     }
     
-    /* 탭 헤더 영역 스타일 */
     button[data-baseweb="tab"] {
         font-size: 15px !important;
         font-weight: 700 !important;
@@ -30,7 +28,6 @@ st.markdown(
         padding-bottom: 8px !important;
     }
 
-    /* 입력 라벨 숨김 및 여백 축소 */
     div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label, div[data-testid="stCheckbox"] label {
         display: none !important;
     }
@@ -47,12 +44,13 @@ st.markdown(
         border: 1px solid #2a313d !important;
     }
     
-    /* 조작 버튼 컴팩트화 */
+    /* 조작 버튼 가독성 향상 */
     div[data-testid="stButton"] button {
-        padding: 0px 2px !important;
-        height: 34px !important;
-        min-height: 34px !important;
-        font-size: 11px !important;
+        padding: 0px 6px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
         border-radius: 6px !important;
     }
     </style>
@@ -63,7 +61,7 @@ st.markdown(
 # -------------------------------------------------------------
 # 1. 지오코더 설정 (Photon Fuzzy Search)
 # -------------------------------------------------------------
-geolocator = Photon(user_agent="nyc_bachelorette_planner_v12")
+geolocator = Photon(user_agent="nyc_bachelorette_planner_v13")
 
 
 @st.cache_data(show_spinner=False)
@@ -127,7 +125,7 @@ if "days_data" not in st.session_state:
                 "end_time": "10:32 AM",
                 "place": "ATL 공항",
                 "note": "Frontier #2282 탑승 (ATL → EWR)",
-                "show_on_map": False,  # 타주 공항이므로 기본 지도 비표시
+                "show_on_map": False,
             },
             {
                 "id": "row_106_1",
@@ -202,13 +200,13 @@ if "row_counter" not in st.session_state:
 tab_main, tab_places = st.tabs(["🗓️ 일정표 & 동선 지도", "📍 등록된 장소 풀 관리"])
 
 # -------------------------------------------------------------
-# TAB 1: [1.0 (좌측 일정 카드)] : [1.4 (우측 요약표 + 지도 넓게)]
+# TAB 1: 좌측 카드 (공간 최적화) + 우측 [요약표 | 지도]
 # -------------------------------------------------------------
 with tab_main:
-    col_schedule, col_map = st.columns([1.0, 1.4], gap="large")
+    col_schedule, col_map = st.columns([1.1, 1.3], gap="large")
 
     with col_schedule:
-        c_day_select, c_day_add = st.columns([3, 1.2])
+        c_day_select, c_day_add = st.columns([3, 1.1])
         with c_day_select:
             day_list = list(st.session_state.days_data.keys())
             curr_idx = (
@@ -240,7 +238,6 @@ with tab_main:
         active_rows = st.session_state.days_data[st.session_state.current_day]
         place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
 
-        # 이동 / 추가 / 삭제 플래그
         move_up_idx = None
         move_down_idx = None
         delete_idx = None
@@ -252,27 +249,26 @@ with tab_main:
             curr_place = (
                 row["place"] if row["place"] in place_options else "(장소 없음)"
             )
-            # 기본값 True 처리
             if "show_on_map" not in row:
                 row["show_on_map"] = True
 
             with st.container(border=True):
-                # 1행: [#순번] [지도체크] [Start] [~] [End] [장소] [버튼들]
+                # 낭비 여백 제거 및 버튼 너비 대폭 확장
+                # [#순번: 0.35, 지도체크: 0.35, Start: 0.9, ~: 0.1, End: 0.9, 장소: 1.8, 버튼그룹: 2.7]
                 c_num, c_map_chk, c_s, c_t, c_e, c_plc, c_btns = st.columns(
-                    [0.45, 0.45, 0.9, 0.12, 0.9, 2.1, 2.1]
+                    [0.35, 0.35, 0.9, 0.1, 0.9, 1.8, 2.7]
                 )
 
                 with c_num:
-                    st.markdown(f"<div style='line-height:34px; font-weight:800; font-size:13px;'>#{idx + 1}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='line-height:36px; font-weight:800; font-size:13px; text-align:center;'>#{idx + 1}</div>", unsafe_allow_html=True)
 
                 with c_map_chk:
-                    # 지도 표시 체크박스 (툴팁 제공)
                     st.write("")
                     row["show_on_map"] = st.checkbox(
                         "지도 표시",
                         value=row["show_on_map"],
                         key=f"map_chk_{r_id}",
-                        help="체크 해제 시 지도/동선에서 제외됩니다.",
+                        help="체크 해제 시 지도/동선에서 제외",
                     )
 
                 with c_s:
@@ -283,7 +279,7 @@ with tab_main:
                         placeholder="Start",
                     )
                 with c_t:
-                    st.markdown("<div style='text-align:center; line-height:34px; color:#64748b;'>~</div>", unsafe_allow_html=True)
+                    st.markdown("<div style='text-align:center; line-height:36px; color:#64748b;'>~</div>", unsafe_allow_html=True)
                 with c_e:
                     row["end_time"] = st.text_input(
                         "End",
@@ -300,7 +296,7 @@ with tab_main:
                     )
 
                 with c_btns:
-                    b1, b2, b3, b4, b5 = st.columns([1, 1, 1, 1, 1])
+                    b1, b2, b3, b4, b5 = st.columns([1.1, 1.1, 0.9, 0.9, 0.9])
                     with b1:
                         if st.button("+↑", key=f"add_up_{r_id}", help="위에 새 일정 추가"):
                             insert_above_idx = idx
@@ -317,7 +313,7 @@ with tab_main:
                         if st.button("✖", key=f"del_{r_id}", help="삭제"):
                             delete_idx = idx
 
-                # 2행: 활동 메모
+                # 메모
                 row["note"] = st.text_input(
                     "메모",
                     value=row.get("note", ""),
@@ -325,7 +321,7 @@ with tab_main:
                     placeholder="활동 내용이나 팁을 입력하세요",
                 )
 
-        # 액션 적용
+        # 액션 처리
         if insert_above_idx is not None:
             st.session_state.row_counter += 1
             active_rows.insert(
@@ -383,11 +379,11 @@ with tab_main:
                 )
                 st.rerun()
 
-    # 우측: [1] 엑셀 스타일 요약 테이블 + [2] 넓어진 동선 맵
+    # 우측: [1] 지도 컬럼이 제거된 깔끔한 요약표 + [2] 동선 지도
     with col_map:
         active_rows = st.session_state.days_data[st.session_state.current_day]
 
-        # ---------------- 요약 테이블 ----------------
+        # ---------------- 요약 테이블 (지도 열 제거) ----------------
         st.markdown(f"#### 📊 {st.session_state.current_day} 일정 요약표")
 
         table_data = []
@@ -399,12 +395,10 @@ with tab_main:
             s_time = r.get("start_time", "").strip()
             e_time = r.get("end_time", "").strip()
             time_display = f"{s_time} ~ {e_time}".strip(" ~") if (s_time or e_time) else "-"
-            map_status = "🗺️ O" if r.get("show_on_map", True) and p_name != "(장소 없음)" else "X"
 
             table_data.append(
                 {
                     "순번": f"#{idx}",
-                    "지도": map_status,
                     "시간": time_display,
                     "장소": f"{emoji} {p_name}" if p_name != "(장소 없음)" else "-",
                     "내용 / 노트": r.get("note", "") or "-",
@@ -418,7 +412,6 @@ with tab_main:
             use_container_width=True,
             column_config={
                 "순번": st.column_config.TextColumn("순번", width="small"),
-                "지도": st.column_config.TextColumn("지도", width="small"),
                 "시간": st.column_config.TextColumn("시간", width="medium"),
                 "장소": st.column_config.TextColumn("장소", width="medium"),
                 "내용 / 노트": st.column_config.TextColumn("내용 / 노트", width="large"),
@@ -436,7 +429,6 @@ with tab_main:
 
         map_seq = 1
         for idx, row in enumerate(active_rows, start=1):
-            # 사용자가 체크한 항목만 지도에 렌더링
             if not row.get("show_on_map", True):
                 continue
 
@@ -550,7 +542,7 @@ with tab_main:
         st_folium(m, width="100%", height=550)
 
 # -------------------------------------------------------------
-# TAB 2: 등록된 장소 풀 관리 (수정 & 삭제 지원)
+# TAB 2: 등록된 장소 풀 관리
 # -------------------------------------------------------------
 with tab_places:
     st.subheader("📍 장소 보관함에 추가하기")

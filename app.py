@@ -10,9 +10,51 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------------
+# 0. 커스텀 CSS (여백 축소, 카드 콤팩트화, 이동 애니메이션)
+# -------------------------------------------------------------
+st.markdown(
+    """
+    <style>
+    /* 전체 여백 컴팩트 조정 */
+    .block-container { padding-top: 1.8rem; padding-bottom: 2rem; }
+    
+    /* 인풋 라벨 여백 최소화 */
+    div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label {
+        display: none !important;
+    }
+    div[data-testid="stTextInput"], div[data-testid="stSelectbox"] {
+        margin-bottom: 0px !important;
+    }
+    
+    /* 카드 컨테이너 컴팩트화 및 애니메이션 */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        padding: 10px 14px !important;
+        margin-bottom: 10px !important;
+        border-radius: 12px !important;
+        background: #181c24 !important;
+        border: 1px solid #2a313d !important;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+        border-color: #4a5568 !important;
+    }
+    
+    /* 이동 버튼 스타일 */
+    div[data-testid="stButton"] button {
+        padding: 2px 8px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        border-radius: 8px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# -------------------------------------------------------------
 # 1. 지오코더 설정 (Photon Fuzzy Search)
 # -------------------------------------------------------------
-geolocator = Photon(user_agent="nyc_bachelorette_planner_v8")
+geolocator = Photon(user_agent="nyc_bachelorette_planner_v9")
 
 
 @st.cache_data(show_spinner=False)
@@ -26,21 +68,18 @@ def get_coordinates(address):
     return None
 
 
-# -------------------------------------------------------------
-# 2. 카테고리 스타일 정의
-# -------------------------------------------------------------
 CATEGORY_STYLE = {
-    "공항": {"emoji": "✈️", "bg": "#0284C7"},
-    "호텔": {"emoji": "🏨", "bg": "#1E88E5"},
-    "음식": {"emoji": "🍴", "bg": "#FB8C00"},
-    "카페/디저트": {"emoji": "☕", "bg": "#8E24AA"},
-    "콘서트/엔터": {"emoji": "🎵", "bg": "#E53935"},
-    "관광/공원": {"emoji": "🌳", "bg": "#43A047"},
-    "쇼핑": {"emoji": "🛍️", "bg": "#00ACC1"},
+    "공항": {"emoji": "✈️", "bg": "#0284C7", "border": "#38bdf8"},
+    "호텔": {"emoji": "🏨", "bg": "#2563EB", "border": "#60a5fa"},
+    "음식": {"emoji": "🍴", "bg": "#EA580C", "border": "#fb923c"},
+    "카페/디저트": {"emoji": "☕", "bg": "#9333EA", "border": "#c084fc"},
+    "콘서트/엔터": {"emoji": "🎵", "bg": "#DC2626", "border": "#f87171"},
+    "관광/공원": {"emoji": "🌳", "bg": "#16A34A", "border": "#4ade80"},
+    "쇼핑": {"emoji": "🛍️", "bg": "#0891B2", "border": "#22d3ee"},
 }
 
 # -------------------------------------------------------------
-# 3. 세션 상태 초기화 (날짜별 일정 구조)
+# 2. 세션 상태 초기화
 # -------------------------------------------------------------
 if "place_pool" not in st.session_state:
     st.session_state.place_pool = {
@@ -130,27 +169,28 @@ if "row_counter" not in st.session_state:
     st.session_state.row_counter = 100
 
 # -------------------------------------------------------------
-# 4. 상단 탭 구성
+# 3. 탭 구성
 # -------------------------------------------------------------
 tab_main, tab_places = st.tabs(["🗓️ 일정표 & 동선 지도", "📍 등록된 장소 풀 관리"])
 
 # -------------------------------------------------------------
-# TAB 1: 통합 카드형 일정표 + 동선 지도
+# TAB 1: 콤팩트 카드형 일정표 + 지도
 # -------------------------------------------------------------
 with tab_main:
-    col_schedule, col_map = st.columns([1.3, 1.1], gap="large")
+    col_schedule, col_map = st.columns([1.25, 1.15], gap="large")
 
     with col_schedule:
-        # 1. 날짜 선택 및 새 날짜 추가
-        c_day_select, c_day_add = st.columns([3, 1.2])
+        # 상단 날짜 탭 & 날짜 추가
+        c_day_select, c_day_add = st.columns([3, 1.1])
         with c_day_select:
             day_list = list(st.session_state.days_data.keys())
             curr_idx = day_list.index(st.session_state.current_day) if st.session_state.current_day in day_list else 0
             selected_day = st.radio(
-                "📅 날짜 선택",
+                "날짜 선택",
                 options=day_list,
                 index=curr_idx,
                 horizontal=True,
+                label_visibility="collapsed"
             )
             st.session_state.current_day = selected_day
 
@@ -163,9 +203,6 @@ with tab_main:
                         st.session_state.current_day = new_date_label.strip()
                         st.rerun()
 
-        st.caption("💡 각 카드의 ▲ / ▼ 버튼으로 순서를 바로 바꿀 수 있습니다.")
-
-        # 2. 현재 선택된 날짜의 일정 카드 리스트
         active_rows = st.session_state.days_data[st.session_state.current_day]
         place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
         
@@ -173,67 +210,75 @@ with tab_main:
         move_down_idx = None
         delete_idx = None
 
+        # 콤팩트 카드 렌더링
         for idx, row in enumerate(active_rows):
             r_id = row["id"]
+            curr_place = row["place"] if row["place"] in place_options else "(장소 없음)"
+            p_cat = st.session_state.place_pool.get(curr_place, {}).get("category", "")
+            cat_style = CATEGORY_STYLE.get(p_cat, {"emoji": "📍", "bg": "#334155", "border": "#64748b"})
+
             with st.container(border=True):
-                # 카드 헤더 (순번 + 시작/종료 시간 + 이동/삭제 버튼)
-                c_num, c_start, c_end, c_up, c_down, c_del = st.columns([0.8, 1.3, 1.3, 0.45, 0.45, 0.45])
+                # 1단: 눈에 확 띄는 [순번 + 장소명 컬러 뱃지 헤더] + 우측 [▲ ▼ ✖ 제어 버튼]
+                c_header, c_btns = st.columns([4, 1.3])
+                with c_header:
+                    st.markdown(
+                        f"""
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="background: #111827; color: #fff; border-radius: 6px; padding: 2px 8px; font-weight: 800; font-size: 13px;">#{idx + 1}</span>
+                            <span style="background: {cat_style['bg']}; color: #ffffff; border-radius: 6px; padding: 2px 10px; font-weight: 700; font-size: 13px; border: 1px solid {cat_style['border']};">
+                                {cat_style['emoji']} {curr_place}
+                            </span>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                with c_btns:
+                    b_up, b_down, b_del = st.columns([1, 1, 1])
+                    with b_up:
+                        if st.button("▲", key=f"up_{r_id}", disabled=(idx == 0), help="위로 올리기"):
+                            move_up_idx = idx
+                    with b_down:
+                        if st.button("▼", key=f"down_{r_id}", disabled=(idx == len(active_rows) - 1), help="아래로 내리기"):
+                            move_down_idx = idx
+                    with b_del:
+                        if st.button("✖", key=f"del_{r_id}", help="삭제"):
+                            delete_idx = idx
 
-                with c_num:
-                    st.markdown(f"### #{idx + 1}")
-
+                # 2단: 시작시간 | 종료시간 | 장소 선택 (슬림하게 1줄로 통합)
+                c_start, c_tilde, c_end, c_select = st.columns([1.1, 0.2, 1.1, 2.5])
                 with c_start:
                     row["start_time"] = st.text_input(
                         "Start",
                         value=row.get("start_time", ""),
                         key=f"start_{r_id}",
-                        placeholder="10:00 AM",
+                        placeholder="Start",
                     )
-
+                with c_tilde:
+                    st.markdown("<div style='text-align: center; line-height: 38px; color: #64748b;'>~</div>", unsafe_allow_html=True)
                 with c_end:
                     row["end_time"] = st.text_input(
                         "End",
                         value=row.get("end_time", ""),
                         key=f"end_{r_id}",
-                        placeholder="11:30 AM",
+                        placeholder="End",
+                    )
+                with c_select:
+                    row["place"] = st.selectbox(
+                        "장소 변경",
+                        options=place_options,
+                        index=place_options.index(curr_place),
+                        key=f"place_{r_id}",
                     )
 
-                with c_up:
-                    st.write("")
-                    st.write("")
-                    if st.button("▲", key=f"btn_up_{r_id}", help="위로 올리기", disabled=(idx == 0)):
-                        move_up_idx = idx
-
-                with c_down:
-                    st.write("")
-                    st.write("")
-                    if st.button("▼", key=f"btn_down_{r_id}", help="아래로 내리기", disabled=(idx == len(active_rows) - 1)):
-                        move_down_idx = idx
-
-                with c_del:
-                    st.write("")
-                    st.write("")
-                    if st.button("✖", key=f"btn_del_{r_id}", help="이 카드 삭제"):
-                        delete_idx = idx
-
-                # 장소 지정 드롭다운
-                curr_place = row["place"] if row["place"] in place_options else "(장소 없음)"
-                row["place"] = st.selectbox(
-                    "장소 선택",
-                    options=place_options,
-                    index=place_options.index(curr_place),
-                    key=f"place_{r_id}",
-                )
-
-                # 활동 내용 / 메모
+                # 3단: 메모 인풋 (슬림 인라인)
                 row["note"] = st.text_input(
-                    "활동 내용 / 세부 메모",
+                    "메모",
                     value=row.get("note", ""),
                     key=f"note_{r_id}",
-                    placeholder="활동 내용 및 팁 입력",
+                    placeholder="활동 내용이나 팁을 입력하세요",
                 )
 
-        # 위/아래 이동 및 삭제 처리
+        # 이동 및 삭제 처리
         if move_up_idx is not None:
             active_rows[move_up_idx - 1], active_rows[move_up_idx] = active_rows[move_up_idx], active_rows[move_up_idx - 1]
             st.rerun()
@@ -246,7 +291,7 @@ with tab_main:
             active_rows.pop(delete_idx)
             st.rerun()
 
-        # 새 일정 카드 추가 버튼
+        # 카드 추가 버튼
         if st.button("➕ 새로운 일정 카드 추가", use_container_width=True):
             st.session_state.row_counter += 1
             active_rows.append(
@@ -263,7 +308,7 @@ with tab_main:
         st.divider()
         draw_line = st.checkbox("지도에 경로 점선 연결하기", value=True)
 
-    # 3. 우측 지도 영역
+    # 우측 지도
     with col_map:
         st.subheader(f"🗺️ {st.session_state.current_day} 동선 맵")
 

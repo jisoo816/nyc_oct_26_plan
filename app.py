@@ -184,7 +184,7 @@ with col_map:
     m = folium.Map(
         location=[center_lat, center_lng],
         zoom_start=zoom_level,
-        tiles="cartodbpositron",
+        tiles="OpenStreetMap",
     )
 
     # 핀 마커 및 동선 라인 좌표 수집

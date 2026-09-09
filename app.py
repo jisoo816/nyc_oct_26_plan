@@ -30,7 +30,7 @@ st.markdown(
         padding: 6px 8px !important;
     }
 
-    /* 라벨 숨김 및 여백 최적화 */
+    /* 입력창 라벨 숨김 및 여백 */
     div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label, div[data-testid="stCheckbox"] label {
         display: none !important;
     }
@@ -40,14 +40,31 @@ st.markdown(
     
     /* 모바일 카드 박스 */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        padding: 12px 10px !important;
+        padding: 10px 8px !important;
         margin-bottom: 12px !important;
         border-radius: 12px !important;
         background: #181c24 !important;
         border: 1px solid #2a313d !important;
     }
 
-    /* 버튼 크기 및 폰트 */
+    /* ★ Streamlit 모바일 컬럼 세로 꺾임 강제 무력화 ★ */
+    @media (max-width: 640px), (max-width: 768px) {
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+            gap: 4px !important;
+            width: 100% !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"] {
+            width: auto !important;
+            flex: 1 1 0px !important;
+            min-width: 0 !important;
+        }
+    }
+
+    /* 버튼 컴팩트 스타일 */
     div[data-testid="stButton"] button {
         padding: 0px !important;
         height: 36px !important;
@@ -55,6 +72,7 @@ st.markdown(
         font-size: 13px !important;
         font-weight: bold !important;
         border-radius: 6px !important;
+        width: 100% !important;
     }
     </style>
     """,

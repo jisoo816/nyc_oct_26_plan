@@ -12,7 +12,7 @@ st.set_page_config(
 # -------------------------------------------------------------
 # 1. 지오코더 설정
 # -------------------------------------------------------------
-geolocator = Nominatim(user_agent="nyc_bachelorette_planner_v5")
+geolocator = Nominatim(user_agent="nyc_bachelorette_planner_v6")
 
 
 @st.cache_data(show_spinner=False)
@@ -36,7 +36,7 @@ CATEGORY_STYLE = {
 }
 
 # -------------------------------------------------------------
-# 2. 세션 상태 초기화: [장소 풀]과 [일정표 슬롯] 분리
+# 2. 세션 상태 초기화: Start/End 시간 지원
 # -------------------------------------------------------------
 if "place_pool" not in st.session_state:
     st.session_state.place_pool = {
@@ -52,24 +52,27 @@ if "place_pool" not in st.session_state:
             "address": "4 Pennsylvania Plaza, New York, NY 10001",
             "category": "콘서트/엔터",
         },
-        "EWR Airport": {
-            "address": "3 Brewster Rd, Newark, NJ 07114",
-            "category": "관광/공원",
-        },
     }
 
 if "schedule_rows" not in st.session_state:
     st.session_state.schedule_rows = [
         {
-            "time": "12:00 PM",
+            "start_time": "12:00 PM",
+            "end_time": "12:30 PM",
             "place": "Thompson Central Park",
             "note": "체크인 & 짐 보관",
         },
-        {"time": "02:00 PM", "place": "Apollo Bagels", "note": "베이글 테이크아웃"},
         {
-            "time": "07:30 PM",
+            "start_time": "01:30 PM",
+            "end_time": "02:30 PM",
+            "place": "Apollo Bagels",
+            "note": "베이글 픽업",
+        },
+        {
+            "start_time": "07:30 PM",
+            "end_time": "10:30 PM",
             "place": "Madison Square Garden",
-            "note": "몬스타엑스 콘서트",
+            "note": "몬스타엑스 콘서트 관람",
         },
     ]
 
@@ -79,37 +82,45 @@ if "schedule_rows" not in st.session_state:
 tab_main, tab_places = st.tabs(["🗓️ 일정표 & 동선 지도", "📍 등록된 장소 풀 관리"])
 
 # -------------------------------------------------------------
-# TAB 1: 일정표 (자유로운 행 추가/삭제/장소 지정) + 지도
+# TAB 1: 일정표 (Start/End 시간) + Pill 상단 번호 지도
 # -------------------------------------------------------------
 with tab_main:
     col_schedule, col_map = st.columns([1.3, 1.1], gap="large")
 
     with col_schedule:
         st.subheader("📋 일정표 편집")
-        st.caption(
-            "각 순번마다 시간, 장소(선택), 노트를 입력하세요. 위/아래 이동 및 행 추가가 자유롭습니다."
-        )
+        st.caption("Start/End 시간, 장소를 자유롭게 설정해 동선을 완성하세요.")
 
         place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
 
-        # 일정 행 렌더링
+        # 행 렌더링
         for idx, row_data in enumerate(st.session_state.schedule_rows):
             with st.container(border=True):
-                c_num, c_time, c_place, c_up, c_down, c_del = st.columns(
-                    [0.8, 1.5, 2.8, 0.6, 0.6, 0.6]
+                # 1열: 순번, 2열: 시작시간, 3열: 종료시간, 4열: 장소지정, 5~7열: 이동/삭제
+                c_num, c_start, c_end, c_place, c_up, c_down, c_del = st.columns(
+                    [0.7, 1.2, 1.2, 2.5, 0.5, 0.5, 0.5]
                 )
 
                 with c_num:
                     st.markdown(f"### #{idx + 1}")
 
-                with c_time:
-                    new_time = st.text_input(
-                        "시간",
-                        value=row_data["time"],
-                        key=f"time_{idx}",
-                        placeholder="12:00 PM",
+                with c_start:
+                    new_start = st.text_input(
+                        "Start",
+                        value=row_data.get("start_time", ""),
+                        key=f"start_{idx}",
+                        placeholder="08:00 AM",
                     )
-                    st.session_state.schedule_rows[idx]["time"] = new_time
+                    st.session_state.schedule_rows[idx]["start_time"] = new_start
+
+                with c_end:
+                    new_end = st.text_input(
+                        "End",
+                        value=row_data.get("end_time", ""),
+                        key=f"end_{idx}",
+                        placeholder="10:00 AM",
+                    )
+                    st.session_state.schedule_rows[idx]["end_time"] = new_end
 
                 with c_place:
                     current_p = (
@@ -162,31 +173,30 @@ with tab_main:
 
                 # 노트 입력 칸
                 new_note = st.text_input(
-                    "활동 내용 / 노트",
-                    value=row_data["note"],
+                    "활동 내용 / 세부 노트",
+                    value=row_data.get("note", ""),
                     key=f"note_{idx}",
-                    placeholder="세부 메모를 적어주세요",
+                    placeholder="식사 메뉴, 이동 팁 등",
                 )
                 st.session_state.schedule_rows[idx]["note"] = new_note
 
         # 행 추가 버튼
         if st.button("➕ 새로운 일정 행 추가하기", use_container_width=True):
             st.session_state.schedule_rows.append(
-                {"time": "", "place": "(장소 없음)", "note": ""}
+                {"start_time": "", "end_time": "", "place": "(장소 없음)", "note": ""}
             )
             st.rerun()
 
         st.divider()
-        draw_line = st.checkbox("지도에 경로 점선 연결하기", value=True)
+        draw_line = st.checkbox("지도에 동선 점선 연결하기", value=True)
 
-    # 우측 지도 렌더링
+    # 우측 지도
     with col_map:
         st.subheader("🗺️ 실시간 동선 맵")
 
         coords_list = []
         map_points = []
 
-        # 일정표에 매핑된 장소들을 순서대로 추출
         for idx, row in enumerate(st.session_state.schedule_rows, start=1):
             p_name = row["place"]
             if p_name != "(장소 없음)" and p_name in st.session_state.place_pool:
@@ -194,12 +204,13 @@ with tab_main:
                 coord = get_coordinates(p_info["address"])
                 if coord:
                     coords_list.append(coord)
+                    time_display = f"{row.get('start_time', '')} ~ {row.get('end_time', '')}".strip(" ~")
                     map_points.append(
                         {
                             "seq": idx,
                             "name": p_name,
-                            "time": row["time"],
-                            "note": row["note"],
+                            "time_str": time_display if time_display else "시간 미정",
+                            "note": row.get("note", ""),
                             "category": p_info["category"],
                             "address": p_info["address"],
                             "coord": coord,
@@ -221,36 +232,70 @@ with tab_main:
             style = CATEGORY_STYLE.get(
                 pt["category"], {"emoji": "📍", "bg": "#333333"}
             )
+
+            # Pill(알약) 상단에 순서 넘버 배지가 떠 있는 디자인
             marker_html = f"""
-            <div style="
-                background-color: {style['bg']};
-                color: white;
-                border: 2px solid white;
-                border-radius: 18px;
-                padding: 4px 8px;
-                font-size: 12px;
-                font-weight: bold;
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                box-shadow: 0px 2px 6px rgba(0,0,0,0.4);
-                white-space: nowrap;
-            ">
-                <span>{style['emoji']}</span>
-                <span>#{pt['seq']}</span>
+            <div style="position: relative; display: inline-block; cursor: pointer;">
+                <!-- 1. 상단 순서 넘버 배지 -->
+                <div style="
+                    position: absolute;
+                    top: -12px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background-color: #111827;
+                    color: #FFFFFF;
+                    border: 1.5px solid #FFFFFF;
+                    border-radius: 10px;
+                    padding: 1px 6px;
+                    font-size: 11px;
+                    font-weight: 800;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                    z-index: 10;
+                    white-space: nowrap;
+                ">
+                    #{pt['seq']}
+                </div>
+
+                <!-- 2. 메인 Pill (아이콘 + 장소명) -->
+                <div style="
+                    background-color: {style['bg']};
+                    color: white;
+                    border: 2px solid #FFFFFF;
+                    border-radius: 20px;
+                    padding: 4px 10px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+                    white-space: nowrap;
+                ">
+                    <span style="font-size: 14px;">{style['emoji']}</span>
+                    <span>{pt['name']}</span>
+                </div>
             </div>
             """
+
             popup_html = f"""
-            <b>#{pt['seq']}. {pt['name']}</b><br>
-            <b>시간:</b> {pt['time']}<br>
-            <b>주소:</b> {pt['address']}<br>
-            <b>노트:</b> {pt['note']}
+            <div style="font-family: sans-serif; font-size: 13px; line-height: 1.4;">
+                <b style="font-size: 14px; color: #111;">#{pt['seq']} {pt['name']}</b><br>
+                <span style="color: #666;">⏰ {pt['time_str']}</span><br>
+                <span style="color: #444;">📍 {pt['address']}</span><br>
+                <hr style="margin: 6px 0; border: none; border-top: 1px solid #eee;">
+                <b>메모:</b> {pt['note']}
+            </div>
             """
+
             folium.Marker(
                 location=pt["coord"],
-                tooltip=f"#{pt['seq']} {pt['name']}",
-                popup=folium.Popup(popup_html, max_width=250),
-                icon=folium.DivIcon(html=marker_html),
+                tooltip=f"#{pt['seq']} {pt['name']} ({pt['time_str']})",
+                popup=folium.Popup(popup_html, max_width=260),
+                icon=folium.DivIcon(
+                    html=marker_html,
+                    icon_size=(140, 40),
+                    icon_anchor=(70, 20),
+                ),
             ).add_to(m)
 
         if draw_line and len(coords_list) > 1:
@@ -262,7 +307,7 @@ with tab_main:
                 dash_array="6, 6",
             ).add_to(m)
 
-        st_folium(m, width="100%", height=600)
+        st_folium(m, width="100%", height=620)
 
 # -------------------------------------------------------------
 # TAB 2: 장소 보관함(풀) 추가 및 관리

@@ -12,54 +12,46 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------------
-# 0. 모바일 가로 강제 정렬 CSS (버튼 세로 깨짐 완전 방지)
+# 0. 모바일 CSS (화면 밖 짤림 방지 및 터치 최적화)
 # -------------------------------------------------------------
 st.markdown(
     """
     <style>
     .block-container { 
         padding-top: 4.2rem !important; 
-        padding-bottom: 2rem !important;
-        padding-left: 0.7rem !important;
-        padding-right: 0.7rem !important;
+        padding-bottom: 2.5rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
     }
     
     button[data-baseweb="tab"] {
-        font-size: 14px !important;
+        font-size: 13px !important;
         font-weight: 700 !important;
-        padding: 8px 10px !important;
+        padding: 6px 8px !important;
     }
 
+    /* 라벨 숨김 및 여백 최적화 */
     div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label, div[data-testid="stCheckbox"] label {
         display: none !important;
     }
     div[data-testid="stTextInput"], div[data-testid="stSelectbox"], div[data-testid="stCheckbox"] {
-        margin-bottom: 0px !important;
+        margin-bottom: 4px !important;
     }
     
     /* 모바일 카드 박스 */
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        padding: 10px !important;
-        margin-bottom: 10px !important;
+        padding: 12px 10px !important;
+        margin-bottom: 12px !important;
         border-radius: 12px !important;
         background: #181c24 !important;
         border: 1px solid #2a313d !important;
     }
 
-    /* 모바일에서도 컬럼이 아래로 떨어지지 않고 한 줄 유지 */
-    div[data-testid="stHorizontalBlock"] {
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        align-items: center !important;
-        gap: 6px !important;
-    }
-    
-    /* 터치 버튼 콤팩트 가로 정렬 */
+    /* 버튼 크기 및 폰트 */
     div[data-testid="stButton"] button {
-        padding: 2px 0px !important;
-        width: 100% !important;
-        height: 34px !important;
-        min-height: 34px !important;
+        padding: 0px !important;
+        height: 36px !important;
+        min-height: 36px !important;
         font-size: 13px !important;
         font-weight: bold !important;
         border-radius: 6px !important;
@@ -72,7 +64,7 @@ st.markdown(
 # -------------------------------------------------------------
 # 1. 지오코더 설정 (Photon)
 # -------------------------------------------------------------
-geolocator = Photon(user_agent="nyc_bachelorette_mobile_v5")
+geolocator = Photon(user_agent="nyc_bachelorette_mobile_v6")
 
 
 @st.cache_data(show_spinner=False)
@@ -206,7 +198,7 @@ if "row_counter" not in st.session_state:
     st.session_state.row_counter = 100
 
 # -------------------------------------------------------------
-# 3. 상단 날짜 선택
+# 3. 날짜 선택
 # -------------------------------------------------------------
 day_list = list(st.session_state.days_data.keys())
 curr_idx = (
@@ -226,7 +218,7 @@ st.session_state.current_day = selected_day
 # 4. 상단 탭 구성
 # -------------------------------------------------------------
 tab_view, tab_edit, tab_places = st.tabs(
-    ["🗓️ 일정표 & 동선 지도", "✏️ 일정 카드 편집", "📍 장소 보관함 관리"]
+    ["🗓️ 일정표 & 지도", "✏️ 일정 카드 편집", "📍 장소 보관함"]
 )
 
 active_rows = st.session_state.days_data[st.session_state.current_day]
@@ -363,13 +355,13 @@ with tab_view:
     if draw_line and len(coords_list) > 1:
         folium.PolyLine(locations=coords_list, color="#0066cc", weight=3, opacity=0.85, dash_array="6, 6").add_to(m)
 
-    st_folium(m, width="100%", height=520)
+    st_folium(m, width="100%", height=500)
 
 # =============================================================
-# TAB 2: ✏️ 일정 카드 편집 (장소 헤더 삭제 & 1줄 버튼 정렬)
+# TAB 2: ✏️ 일정 카드 편집 (모바일 3단계 레이아웃)
 # =============================================================
 with tab_edit:
-    st.caption("▲ / ▼ 버튼으로 순서를 바꾸고, 시간을 직접 수정하세요.")
+    st.caption("카드를 수정하거나 순서를 변경하세요.")
 
     move_up_idx = None
     move_down_idx = None
@@ -384,55 +376,63 @@ with tab_edit:
             row["show_on_map"] = True
 
         with st.container(border=True):
-            # 1행: [#순번]과 [▲ | ▼ | +↓ | ✖] 버튼을 가로 1줄로 통합
-            c_num, b1, b2, b3, b4 = st.columns([1.5, 1, 1, 1, 1])
+            # [1단 컨트롤 바] #순번 | 지도 🗺️ | ▲ | ▼ | +↓ | ✖ (안 잘리도록 균등 6분할)
+            c_num, c_map, c_u, c_d, c_in, c_x = st.columns([1.1, 1.3, 1.0, 1.0, 1.0, 1.0])
             with c_num:
                 st.markdown(
-                    f"<div style='line-height: 34px; font-weight: 800; font-size: 15px; color: #fff;'>#{idx + 1}</div>",
+                    f"<div style='line-height:36px; font-weight:800; font-size:16px;'>#{idx + 1}</div>",
                     unsafe_allow_html=True,
                 )
-            with b1:
+            with c_map:
+                st.write("")
+                row["show_on_map"] = st.checkbox("🗺️", value=row["show_on_map"], key=f"map_{r_id}", help="지도 표시 여부")
+            with c_u:
                 if st.button("▲", key=f"u_{r_id}", disabled=(idx == 0), help="위로"):
                     move_up_idx = idx
-            with b2:
+            with c_d:
                 if st.button("▼", key=f"d_{r_id}", disabled=(idx == len(active_rows) - 1), help="아래로"):
                     move_down_idx = idx
-            with b3:
-                if st.button("+↓", key=f"a_{r_id}", help="아래에 추가"):
+            with c_in:
+                if st.button("+↓", key=f"in_{r_id}", help="아래에 새 일정 추가"):
                     insert_below_idx = idx
-            with b4:
+            with c_x:
                 if st.button("✖", key=f"x_{r_id}", help="삭제"):
                     delete_idx = idx
 
-            # 2행: 시간 입력 & 지도 표시 체크
-            c_s, c_t, c_e, c_m = st.columns([1.3, 0.2, 1.3, 1.0])
-            with c_s:
-                row["start_time"] = st.text_input("시작", value=row.get("start_time", ""), key=f"s_{r_id}", placeholder="Start")
-            with c_t:
-                st.markdown("<div style='text-align:center; line-height:36px; color:#64748b;'>~</div>", unsafe_allow_html=True)
-            with c_e:
-                row["end_time"] = st.text_input("종료", value=row.get("end_time", ""), key=f"e_{r_id}", placeholder="End")
-            with c_m:
-                st.write("")
-                row["show_on_map"] = st.checkbox("지도", value=row["show_on_map"], key=f"m_{r_id}", help="지도 표시")
+            # [2단 시간 입력] Start 시간과 End 시간을 확실하게 2칸으로 분할
+            t_col1, t_col2 = st.columns(2)
+            with t_col1:
+                row["start_time"] = st.text_input(
+                    "시작",
+                    value=row.get("start_time", ""),
+                    key=f"start_{r_id}",
+                    placeholder="시작 (예: 08:00 AM)",
+                )
+            with t_col2:
+                row["end_time"] = st.text_input(
+                    "종료",
+                    value=row.get("end_time", ""),
+                    key=f"end_{r_id}",
+                    placeholder="종료 (예: 10:30 AM)",
+                )
 
-            # 3행: 장소 선택
+            # [3단 장소 선택]
             row["place"] = st.selectbox(
                 "장소",
                 options=place_options,
                 index=place_options.index(curr_place),
-                key=f"p_{r_id}",
+                key=f"place_{r_id}",
             )
 
-            # 4행: 활동 내용
+            # [4단 메모 입력]
             row["note"] = st.text_input(
                 "메모",
                 value=row.get("note", ""),
-                key=f"n_{r_id}",
+                key=f"note_{r_id}",
                 placeholder="활동 내용이나 팁을 입력하세요",
             )
 
-    # 이벤트 처리
+    # 액션 반영
     if insert_below_idx is not None:
         st.session_state.row_counter += 1
         active_rows.insert(

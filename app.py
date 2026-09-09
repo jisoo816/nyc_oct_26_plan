@@ -312,43 +312,73 @@ with tab_main:
 # -------------------------------------------------------------
 # TAB 2: 장소 보관함(풀) 추가 및 관리
 # -------------------------------------------------------------
+# -------------------------------------------------------------
+# TAB 2: 장소 보관함(풀) 추가 및 관리 (자동 검색 지원)
+# -------------------------------------------------------------
 with tab_places:
-    st.subheader("📍 사용할 수 있는 장소 등록하기")
+    st.subheader("📍 이름으로 장소 검색 & 보관함에 추가")
+    st.caption("장소 이름(상호명)만 입력하고 검색하면 주소를 자동으로 찾아줘요.")
 
-    with st.form("add_pool_form", clear_on_submit=True):
-        new_name = st.text_input(
-            "장소 이름", placeholder="예: L'Industrie Pizzeria"
-        )
-        new_addr = st.text_input(
-            "상세 주소",
-            placeholder="예: 104 Christopher St, New York, NY 10014",
-        )
-        new_cat = st.selectbox("카테고리 아이콘", list(CATEGORY_STYLE.keys()))
+    if "search_results" not in st.session_state:
+        st.session_state.search_results = []
 
-        if st.form_submit_button("장소 보관함에 추가"):
-            if new_name and new_addr:
-                coord = get_coordinates(new_addr)
-                if coord:
-                    st.session_state.place_pool[new_name] = {
-                        "address": new_addr,
-                        "category": new_cat,
-                    }
-                    st.success(f"'{new_name}'이 장소 보관함에 추가되었습니다!")
-                    st.rerun()
-                else:
-                    st.error("주소를 지도에서 찾을 수 없습니다.")
+    # 1. 검색어 입력 및 자동 검색
+    c_query, c_btn = st.columns([4, 1])
+    with c_query:
+        search_query = st.text_input(
+            "장소 이름 검색",
+            placeholder="예: L'Industrie Pizzeria, Buvette, Kat'z Deli...",
+            key="place_search_input"
+        )
+    with c_btn:
+        st.write("")
+        st.write("")
+        if st.button("🔍 주소 검색", use_container_width=True):
+            if search_query.strip():
+                with st.spinner("주소 찾는 중..."):
+                    # 뉴욕 내 장소 우선 검색
+                    query = f"{search_query}, New York"
+                    try:
+                        results = geolocator.geocode(query, exactly_one=False, limit=5)
+                        if results:
+                            st.session_state.search_results = results
+                        else:
+                            st.warning("결과를 찾지 못했습니다. 상호명을 조금 더 구체적으로 입력해 보세요.")
+                    except Exception as e:
+                        st.error("검색 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.")
             else:
-                st.error("이름과 주소를 모두 입력해 주세요.")
+                st.warning("검색할 장소 이름을 입력해 주세요.")
+
+    # 2. 검색 결과 드롭다운 선택 후 최종 등록
+    if st.session_state.search_results:
+        st.markdown("#### 🎯 검색 결과 선택")
+        addr_options = [r.address for r in st.session_state.search_results]
+        selected_address = st.selectbox("정확한 위치/주소를 선택하세요:", addr_options)
+        
+        c_name, c_cat = st.columns([2, 1])
+        with c_name:
+            final_name = st.text_input("일정표에 표시할 이름", value=search_query)
+        with c_cat:
+            final_cat = st.selectbox("카테고리 아이콘", list(CATEGORY_STYLE.keys()))
+
+        if st.button("➕ 이 장소 보관함에 저장", type="primary", use_container_width=True):
+            # 선택한 주소의 위경도 찾기
+            selected_loc = next(r for r in st.session_state.search_results if r.address == selected_address)
+            st.session_state.place_pool[final_name] = {
+                "address": selected_address,
+                "category": final_cat
+            }
+            st.success(f"'{final_name}'이(가) 장소 보관함에 추가되었습니다!")
+            st.session_state.search_results = []  # 검색 결과 초기화
+            st.rerun()
 
     st.divider()
     st.subheader("📋 현재 등록된 장소 풀")
     for p_name, p_info in list(st.session_state.place_pool.items()):
         c1, c2 = st.columns([5, 1])
         with c1:
-            style = CATEGORY_STYLE.get(p_info["category"], {"emoji": "📍"})
-            st.write(
-                f"{style['emoji']} **{p_name}** ({p_info['category']}) - {p_info['address']}"
-            )
+            style = CATEGORY_STYLE.get(p_info.get("category", ""), {"emoji": "📍"})
+            st.write(f"{style['emoji']} **{p_name}** ({p_info.get('category', '')}) - {p_info.get('address', '')}")
         with c2:
             if st.button("삭제", key=f"del_pool_{p_name}"):
                 del st.session_state.place_pool[p_name]

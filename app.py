@@ -1,5 +1,5 @@
 import folium
-from geopy.geocoders import Nominatim
+from geopy.geocoders import Photon
 import streamlit as st
 from streamlit_folium import st_folium
 
@@ -12,12 +12,16 @@ st.set_page_config(
 # -------------------------------------------------------------
 # 1. 지오코더 설정
 # -------------------------------------------------------------
-geolocator = Nominatim(user_agent="nyc_bachelorette_planner_v6")
+from geopy.geocoders import Photon
+
+# 무료이면서 구글맵처럼 오타 교정 및 연관 검색(Fuzzy search)을 지원하는 엔진
+geolocator = Photon(user_agent="nyc_bachelorette_planner_fuzzy")
 
 
 @st.cache_data(show_spinner=False)
 def get_coordinates(address):
     try:
+        # 광역 검색을 위해 뉴욕/뉴저지 바운더리 힌트 적용
         loc = geolocator.geocode(address)
         if loc:
             return [loc.latitude, loc.longitude]
@@ -333,19 +337,22 @@ with tab_places:
     with c_btn:
         st.write("")
         st.write("")
-        if st.button("🔍 주소 검색", use_container_width=True):
-            if search_query.strip():
-                with st.spinner("주소 찾는 중..."):
-                    # 뉴욕 내 장소 우선 검색
-                    query = f"{search_query}, New York"
-                    try:
-                        results = geolocator.geocode(query, exactly_one=False, limit=5)
-                        if results:
-                            st.session_state.search_results = results
-                        else:
-                            st.warning("결과를 찾지 못했습니다. 상호명을 조금 더 구체적으로 입력해 보세요.")
-                    except Exception as e:
-                        st.error("검색 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.")
+        if st.button("🔍 검색", use_container_width=True):
+                if search_query.strip():
+                    with st.spinner("위치 찾는 중..."):
+                        try:
+                            # Photon은 오타와 복합 명칭을 알아서 처리함
+                            results = geolocator.geocode(
+                                search_query.strip(), exactly_one=False, limit=5
+                            )
+                            if results:
+                                st.session_state.search_results = results
+                            else:
+                                st.warning(
+                                    "결과를 찾지 못했습니다. 키워드를 조금만 줄여보세요."
+                                )
+                        except Exception:
+                            st.error("검색 중 일시적인 오류가 발생했습니다.")
             else:
                 st.warning("검색할 장소 이름을 입력해 주세요.")
 

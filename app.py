@@ -378,8 +378,11 @@ with tab_view:
 # =============================================================
 # TAB 2: ✏️ 일정 카드 편집 (모바일 3단계 레이아웃)
 # =============================================================
+# =============================================================
+# TAB 2: ✏️ 일정 카드 편집 (모바일 100% 가로 고정 레이아웃)
+# =============================================================
 with tab_edit:
-    st.caption("카드를 수정하거나 순서를 변경하세요.")
+    st.caption("순서 이동 및 일정을 편집하세요.")
 
     move_up_idx = None
     move_down_idx = None
@@ -394,77 +397,92 @@ with tab_edit:
             row["show_on_map"] = True
 
         with st.container(border=True):
-            # [1단 컨트롤 바] #순번 | 지도 🗺️ | ▲ | ▼ | +↓ | ✖ (안 잘리도록 균등 6분할)
-            c_num, c_map, c_u, c_d, c_in, c_x = st.columns([1.1, 1.3, 1.0, 1.0, 1.0, 1.0])
-            with c_num:
-                st.markdown(
-                    f"<div style='line-height:36px; font-weight:800; font-size:16px;'>#{idx + 1}</div>",
-                    unsafe_allow_html=True,
+            # [1단 헤더] #순번 + 가로 1줄 보장 버튼 바 (▲ | ▼ | +↓ | ✖)
+            c_header_num, c_header_actions = st.columns([1, 4])
+            with c_header_num:
+                st.markdown(f"<div style='font-size: 18px; font-weight: 800; line-height: 40px;'>#{idx + 1}</div>", unsafe_allow_html=True)
+            
+            with c_header_actions:
+                # 모바일에서도 절대 세로로 꺾이지 않는 세그먼트 바
+                action = st.segmented_control(
+                    "actions",
+                    options=["▲", "▼", "+↓", "✖"],
+                    key=f"act_{r_id}_{idx}",
+                    label_visibility="collapsed"
                 )
-            with c_map:
-                st.write("")
-                row["show_on_map"] = st.checkbox("🗺️", value=row["show_on_map"], key=f"map_{r_id}", help="지도 표시 여부")
-            with c_u:
-                if st.button("▲", key=f"u_{r_id}", disabled=(idx == 0), help="위로"):
+                if action == "▲" and idx > 0:
                     move_up_idx = idx
-            with c_d:
-                if st.button("▼", key=f"d_{r_id}", disabled=(idx == len(active_rows) - 1), help="아래로"):
+                elif action == "▼" and idx < len(active_rows) - 1:
                     move_down_idx = idx
-            with c_in:
-                if st.button("+↓", key=f"in_{r_id}", help="아래에 새 일정 추가"):
+                elif action == "+↓":
                     insert_below_idx = idx
-            with c_x:
-                if st.button("✖", key=f"x_{r_id}", help="삭제"):
+                elif action == "✖":
                     delete_idx = idx
 
-            # [2단 시간 입력] Start 시간과 End 시간을 확실하게 2칸으로 분할
-            t_col1, t_col2 = st.columns(2)
-            with t_col1:
+            # [2단 시간 & 지도 토글]
+            c_time_start, c_time_end, c_map_chk = st.columns([2.5, 2.5, 1.2])
+            with c_time_start:
                 row["start_time"] = st.text_input(
                     "시작",
                     value=row.get("start_time", ""),
-                    key=f"start_{r_id}",
-                    placeholder="시작 (예: 08:00 AM)",
+                    key=f"s_{r_id}",
+                    placeholder="시작 시간"
                 )
-            with t_col2:
+            with c_time_end:
                 row["end_time"] = st.text_input(
                     "종료",
                     value=row.get("end_time", ""),
-                    key=f"end_{r_id}",
-                    placeholder="종료 (예: 10:30 AM)",
+                    key=f"e_{r_id}",
+                    placeholder="종료 시간"
                 )
+            with c_map_chk:
+                st.write("")
+                row["show_on_map"] = st.checkbox("🗺️", value=row["show_on_map"], key=f"m_{r_id}", help="지도 표시")
 
             # [3단 장소 선택]
             row["place"] = st.selectbox(
                 "장소",
                 options=place_options,
                 index=place_options.index(curr_place),
-                key=f"place_{r_id}",
+                key=f"p_{r_id}",
             )
 
-            # [4단 메모 입력]
+            # [4단 메모]
             row["note"] = st.text_input(
                 "메모",
                 value=row.get("note", ""),
-                key=f"note_{r_id}",
+                key=f"n_{r_id}",
                 placeholder="활동 내용이나 팁을 입력하세요",
             )
 
-    # 액션 반영
+    # 액션 처리 로직
     if insert_below_idx is not None:
         st.session_state.row_counter += 1
         active_rows.insert(
             insert_below_idx + 1,
-            {"id": f"row_{st.session_state.row_counter}", "start_time": "", "end_time": "", "place": "(장소 없음)", "note": "", "show_on_map": True},
+            {
+                "id": f"row_{st.session_state.row_counter}",
+                "start_time": "",
+                "end_time": "",
+                "place": "(장소 없음)",
+                "note": "",
+                "show_on_map": True,
+            },
         )
         st.rerun()
 
     if move_up_idx is not None:
-        active_rows[move_up_idx - 1], active_rows[move_up_idx] = active_rows[move_up_idx], active_rows[move_up_idx - 1]
+        active_rows[move_up_idx - 1], active_rows[move_up_idx] = (
+            active_rows[move_up_idx],
+            active_rows[move_up_idx - 1],
+        )
         st.rerun()
 
     if move_down_idx is not None:
-        active_rows[move_down_idx + 1], active_rows[move_down_idx] = active_rows[move_down_idx], active_rows[move_down_idx + 1]
+        active_rows[move_down_idx + 1], active_rows[move_down_idx] = (
+            active_rows[move_down_idx],
+            active_rows[move_down_idx + 1],
+        )
         st.rerun()
 
     if delete_idx is not None:
@@ -474,7 +492,14 @@ with tab_edit:
     if st.button("➕ 맨 아래에 새 일정 추가", use_container_width=True):
         st.session_state.row_counter += 1
         active_rows.append(
-            {"id": f"row_{st.session_state.row_counter}", "start_time": "", "end_time": "", "place": "(장소 없음)", "note": "", "show_on_map": True}
+            {
+                "id": f"row_{st.session_state.row_counter}",
+                "start_time": "",
+                "end_time": "",
+                "place": "(장소 없음)",
+                "note": "",
+                "show_on_map": True,
+            }
         )
         st.rerun()
 

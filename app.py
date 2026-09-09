@@ -12,27 +12,24 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------------
-# 0. 모바일 최적화 커스텀 CSS (상단 패딩 확보 및 컴팩트 카드 정렬)
+# 0. 모바일 최적화 커스텀 CSS (상단 패딩 확보 및 가독성 개선)
 # -------------------------------------------------------------
 st.markdown(
     """
     <style>
-    /* 상단 패딩을 확실히 주어 Streamlit 헤더와 탭 잘림 방지 */
     .block-container { 
-        padding-top: 4.2rem !important; 
+        padding-top: 4.5rem !important; 
         padding-bottom: 2rem !important;
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
     }
     
-    /* 최상단 탭 글자 크기 및 여백 시원하게 조정 */
     button[data-baseweb="tab"] {
-        font-size: 15px !important;
+        font-size: 14px !important;
         font-weight: 700 !important;
-        padding: 8px 14px !important;
+        padding: 8px 10px !important;
     }
 
-    /* 입력창 라벨 숨김 및 여백 정리 */
     div[data-testid="stTextInput"] label, div[data-testid="stSelectbox"] label, div[data-testid="stCheckbox"] label {
         display: none !important;
     }
@@ -40,16 +37,14 @@ st.markdown(
         margin-bottom: 0px !important;
     }
     
-    /* 모바일 카드 박스 */
     div[data-testid="stVerticalBlockBorderWrapper"] {
         padding: 10px !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 8px !important;
         border-radius: 12px !important;
         background: #181c24 !important;
         border: 1px solid #2a313d !important;
     }
     
-    /* 모바일 터치 친화 버튼 */
     div[data-testid="stButton"] button {
         padding: 4px 6px !important;
         height: 38px !important;
@@ -64,9 +59,9 @@ st.markdown(
 )
 
 # -------------------------------------------------------------
-# 1. 지오코더 설정 (Photon Fuzzy Search)
+# 1. 지오코더 설정 (Photon)
 # -------------------------------------------------------------
-geolocator = Photon(user_agent="nyc_bachelorette_mobile_v2")
+geolocator = Photon(user_agent="nyc_bachelorette_mobile_v3")
 
 
 @st.cache_data(show_spinner=False)
@@ -200,139 +195,38 @@ if "row_counter" not in st.session_state:
     st.session_state.row_counter = 100
 
 # -------------------------------------------------------------
-# 3. 최상단 메인 탭 2개 구성 (요청하신 대로 탭 이름 노출)
+# 3. 날짜 선택 바 (날짜 추가 버튼 제거)
 # -------------------------------------------------------------
-tab_main, tab_places = st.tabs(["🗓️ 일정표 & 동선 지도", "📍 장소 보관함 관리"])
+day_list = list(st.session_state.days_data.keys())
+curr_idx = (
+    day_list.index(st.session_state.current_day)
+    if st.session_state.current_day in day_list
+    else 0
+)
+selected_day = st.radio(
+    "날짜 선택",
+    options=day_list,
+    index=curr_idx,
+    horizontal=True,
+)
+st.session_state.current_day = selected_day
+
+# -------------------------------------------------------------
+# 4. 상단 3개 탭 구성
+# -------------------------------------------------------------
+tab_view, tab_edit, tab_places = st.tabs(
+    ["🗓️ 일정표 & 동선 지도", "✏️ 일정 카드 편집", "📍 장소 보관함 관리"]
+)
+
+active_rows = st.session_state.days_data[st.session_state.current_day]
+place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
 
 # =============================================================
-# TAB 1: 일정표 & 동선 지도 (편집 카드 + 요약표 + 지도 통합)
+# TAB 1: 🗓️ 일정표 & 동선 지도 (조회 모드: 요약표 + 지도)
 # =============================================================
-with tab_main:
-    # 1. 날짜 선택 바
-    c_day_sel, c_day_btn = st.columns([3.2, 1.2])
-    with c_day_sel:
-        day_list = list(st.session_state.days_data.keys())
-        curr_idx = (
-            day_list.index(st.session_state.current_day)
-            if st.session_state.current_day in day_list
-            else 0
-        )
-        selected_day = st.radio(
-            "날짜",
-            options=day_list,
-            index=curr_idx,
-            horizontal=True,
-            label_visibility="collapsed",
-        )
-        st.session_state.current_day = selected_day
-
-    with c_day_btn:
-        with st.popover("➕ 날짜"):
-            new_d = st.text_input("새 날짜", placeholder="10/8 (목)")
-            if st.button("추가", use_container_width=True):
-                if new_d.strip() and new_d not in st.session_state.days_data:
-                    st.session_state.days_data[new_d.strip()] = []
-                    st.session_state.current_day = new_d.strip()
-                    st.rerun()
-
-    active_rows = st.session_state.days_data[st.session_state.current_day]
-    place_options = ["(장소 없음)"] + list(st.session_state.place_pool.keys())
-
-    st.markdown("### 📋 일정 카드 편집")
-    
-    move_up_idx = None
-    move_down_idx = None
-    delete_idx = None
-    insert_above_idx = None
-    insert_below_idx = None
-
-    for idx, row in enumerate(active_rows):
-        r_id = row["id"]
-        curr_place = row["place"] if row["place"] in place_options else "(장소 없음)"
-        if "show_on_map" not in row:
-            row["show_on_map"] = True
-
-        with st.container(border=True):
-            # 1행: [#순번] [지도체크] [시간 Start ~ End] [버튼 그룹]
-            c_num, c_map, c_time, c_btns = st.columns([0.6, 0.6, 2.5, 2.5])
-            with c_num:
-                st.markdown(f"<div style='line-height:36px; font-weight:800; font-size:14px;'>#{idx + 1}</div>", unsafe_allow_html=True)
-            with c_map:
-                st.write("")
-                row["show_on_map"] = st.checkbox("지도", value=row["show_on_map"], key=f"m_{r_id}", help="지도 표시 여부")
-            with c_time:
-                t1, t_tilde, t2 = st.columns([1.1, 0.2, 1.1])
-                with t1:
-                    row["start_time"] = st.text_input("시작", value=row.get("start_time", ""), key=f"s_{r_id}", placeholder="Start")
-                with t_tilde:
-                    st.markdown("<div style='text-align:center; line-height:36px; color:#64748b;'>~</div>", unsafe_allow_html=True)
-                with t2:
-                    row["end_time"] = st.text_input("종료", value=row.get("end_time", ""), key=f"e_{r_id}", placeholder="End")
-            with c_btns:
-                b_u, b_d, b_in, b_x = st.columns([1, 1, 1, 1])
-                with b_u:
-                    if st.button("▲", key=f"up_{r_id}", disabled=(idx == 0)):
-                        move_up_idx = idx
-                with b_d:
-                    if st.button("▼", key=f"down_{r_id}", disabled=(idx == len(active_rows) - 1)):
-                        move_down_idx = idx
-                with b_in:
-                    if st.button("+↓", key=f"add_{r_id}", help="아래에 추가"):
-                        insert_below_idx = idx
-                with b_x:
-                    if st.button("✖", key=f"del_{r_id}"):
-                        delete_idx = idx
-
-            # 2행: 장소 선택
-            row["place"] = st.selectbox(
-                "장소",
-                options=place_options,
-                index=place_options.index(curr_place),
-                key=f"p_{r_id}",
-            )
-
-            # 3행: 활동 메모
-            row["note"] = st.text_input(
-                "메모",
-                value=row.get("note", ""),
-                key=f"note_{r_id}",
-                placeholder="활동 내용이나 팁을 입력하세요",
-            )
-
-    # 액션 처리
-    if insert_below_idx is not None:
-        st.session_state.row_counter += 1
-        active_rows.insert(
-            insert_below_idx + 1,
-            {"id": f"row_{st.session_state.row_counter}", "start_time": "", "end_time": "", "place": "(장소 없음)", "note": "", "show_on_map": True},
-        )
-        st.rerun()
-
-    if move_up_idx is not None:
-        active_rows[move_up_idx - 1], active_rows[move_up_idx] = active_rows[move_up_idx], active_rows[move_up_idx - 1]
-        st.rerun()
-
-    if move_down_idx is not None:
-        active_rows[move_down_idx + 1], active_rows[move_down_idx] = active_rows[move_down_idx], active_rows[move_down_idx + 1]
-        st.rerun()
-
-    if delete_idx is not None:
-        active_rows.pop(delete_idx)
-        st.rerun()
-
-    if st.button("➕ 맨 아래에 새 일정 추가", use_container_width=True):
-        st.session_state.row_counter += 1
-        active_rows.append(
-            {"id": f"row_{st.session_state.row_counter}", "start_time": "", "end_time": "", "place": "(장소 없음)", "note": "", "show_on_map": True}
-        )
-        st.rerun()
-
-    st.divider()
-
-    # ---------------------------------------------------------
-    # 📊 타임라인 요약표
-    # ---------------------------------------------------------
-    st.markdown(f"### 📊 {st.session_state.current_day} 타임라인 요약")
+with tab_view:
+    # 1. 엑셀 스타일 타임라인 요약표
+    st.markdown(f"#### 📊 {st.session_state.current_day} 타임라인")
     table_data = []
     for idx, r in enumerate(active_rows, start=1):
         p_name = r.get("place", "(장소 없음)")
@@ -367,10 +261,8 @@ with tab_main:
 
     st.divider()
 
-    # ---------------------------------------------------------
-    # 🗺️ 동선 맵
-    # ---------------------------------------------------------
-    st.markdown(f"### 🗺️ {st.session_state.current_day} 동선 맵")
+    # 2. 동선 지도
+    st.markdown(f"#### 🗺️ {st.session_state.current_day} 동선 맵")
     draw_line = st.checkbox("경로 점선 연결", value=True)
 
     coords_list = []
@@ -463,11 +355,103 @@ with tab_main:
     if draw_line and len(coords_list) > 1:
         folium.PolyLine(locations=coords_list, color="#0066cc", weight=3, opacity=0.85, dash_array="6, 6").add_to(m)
 
-    st_folium(m, width="100%", height=500)
-
+    st_folium(m, width="100%", height=520)
 
 # =============================================================
-# TAB 2: 장소 보관함 관리 (검색 추가, 직접 추가, 수정/삭제)
+# TAB 2: ✏️ 일정 카드 편집 (순서 이동, 추가, 수정 전담)
+# =============================================================
+with tab_edit:
+    st.markdown(f"#### ✏️ {st.session_state.current_day} 일정 편집")
+    st.caption("카드의 시간을 바꾸거나 ▲/▼ 버튼으로 순서를 변경하세요.")
+
+    move_up_idx = None
+    move_down_idx = None
+    delete_idx = None
+    insert_below_idx = None
+
+    for idx, row in enumerate(active_rows):
+        r_id = row["id"]
+        curr_place = row["place"] if row["place"] in place_options else "(장소 없음)"
+        if "show_on_map" not in row:
+            row["show_on_map"] = True
+
+        with st.container(border=True):
+            # 1행: [#순번] [지도체크] [시간 Start ~ End] [버튼 그룹]
+            c_num, c_map, c_time, c_btns = st.columns([0.6, 0.6, 2.5, 2.5])
+            with c_num:
+                st.markdown(f"<div style='line-height:36px; font-weight:800; font-size:14px;'>#{idx + 1}</div>", unsafe_allow_html=True)
+            with c_map:
+                st.write("")
+                row["show_on_map"] = st.checkbox("지도", value=row["show_on_map"], key=f"m_{r_id}", help="지도 표시 여부")
+            with c_time:
+                t1, t_tilde, t2 = st.columns([1.1, 0.2, 1.1])
+                with t1:
+                    row["start_time"] = st.text_input("시작", value=row.get("start_time", ""), key=f"s_{r_id}", placeholder="Start")
+                with t_tilde:
+                    st.markdown("<div style='text-align:center; line-height:36px; color:#64748b;'>~</div>", unsafe_allow_html=True)
+                with t2:
+                    row["end_time"] = st.text_input("종료", value=row.get("end_time", ""), key=f"e_{r_id}", placeholder="End")
+            with c_btns:
+                b_u, b_d, b_in, b_x = st.columns([1, 1, 1, 1])
+                with b_u:
+                    if st.button("▲", key=f"up_{r_id}", disabled=(idx == 0)):
+                        move_up_idx = idx
+                with b_d:
+                    if st.button("▼", key=f"down_{r_id}", disabled=(idx == len(active_rows) - 1)):
+                        move_down_idx = idx
+                with b_in:
+                    if st.button("+↓", key=f"add_{r_id}", help="아래에 추가"):
+                        insert_below_idx = idx
+                with b_x:
+                    if st.button("✖", key=f"del_{r_id}"):
+                        delete_idx = idx
+
+            # 2행: 장소 선택
+            row["place"] = st.selectbox(
+                "장소",
+                options=place_options,
+                index=place_options.index(curr_place),
+                key=f"p_{r_id}",
+            )
+
+            # 3행: 활동 메모
+            row["note"] = st.text_input(
+                "메모",
+                value=row.get("note", ""),
+                key=f"note_{r_id}",
+                placeholder="활동 내용이나 팁을 입력하세요",
+            )
+
+    # 액션 처리
+    if insert_below_idx is not None:
+        st.session_state.row_counter += 1
+        active_rows.insert(
+            insert_below_idx + 1,
+            {"id": f"row_{st.session_state.row_counter}", "start_time": "", "end_time": "", "place": "(장소 없음)", "note": "", "show_on_map": True},
+        )
+        st.rerun()
+
+    if move_up_idx is not None:
+        active_rows[move_up_idx - 1], active_rows[move_up_idx] = active_rows[move_up_idx], active_rows[move_up_idx - 1]
+        st.rerun()
+
+    if move_down_idx is not None:
+        active_rows[move_down_idx + 1], active_rows[move_down_idx] = active_rows[move_down_idx], active_rows[move_down_idx + 1]
+        st.rerun()
+
+    if delete_idx is not None:
+        active_rows.pop(delete_idx)
+        st.rerun()
+
+    if st.button("➕ 맨 아래에 새 일정 추가", use_container_width=True):
+        st.session_state.row_counter += 1
+        active_rows.append(
+            {"id": f"row_{st.session_state.row_counter}", "start_time": "", "end_time": "", "place": "(장소 없음)", "note": "", "show_on_map": True}
+        )
+        st.rerun()
+
+# =============================================================
+# TAB 3: 📍 장소 보관함 관리 (검색 추가, 직접 추가, 수정/삭제)
 # =============================================================
 with tab_places:
     st.subheader("📍 장소 보관함 관리")
@@ -521,10 +505,15 @@ with tab_places:
             style = CATEGORY_STYLE.get(p_info.get("category", ""), {"emoji": "📍"})
             st.write(f"{style['emoji']} **{p_name}**")
         with c2:
-            with st.popover("✏️ 수정"):
+            with st.popover("✏️"):
                 e_name = st.text_input("이름", value=p_name, key=f"en_{p_name}")
                 e_addr = st.text_input("주소", value=p_info.get("address", ""), key=f"ea_{p_name}")
-                e_cat = st.selectbox("카테고리", list(CATEGORY_STYLE.keys()), index=list(CATEGORY_STYLE.keys()).index(p_info.get("category", "관광/공원")), key=f"ec_{p_name}")
+                e_cat = st.selectbox(
+                    "카테고리",
+                    list(CATEGORY_STYLE.keys()),
+                    index=list(CATEGORY_STYLE.keys()).index(p_info.get("category", "관광/공원")),
+                    key=f"ec_{p_name}",
+                )
                 if st.button("저장", key=f"sv_{p_name}", use_container_width=True):
                     if e_name != p_name:
                         del st.session_state.place_pool[p_name]

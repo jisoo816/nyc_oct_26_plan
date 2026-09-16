@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NYC Trip Guide - Jungweon's Bachelorette 💍</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Antique Ivory Paper + Rich Dusty Rose + Vintage Brass */
+    --paper-bg: #f6f0e6;          /* Warm Antique Ivory Paper */
+    --paper-card: #fffdfa;        /* Pure Soft Ivory Card */
+    --paper-inner: #fbf5ee;       /* Subtle Warm Inner Tint */
+    --dr-primary: #af5b69;        /* Rich Dusty Rose */
+    --dr-primary-dark: #782f3c;   /* Deep Wine Rose */
+    --dr-mauve: #c17c87;          /* Soft Rose Mauve */
+    --dr-gold: #9e7538;           /* Antique Brass / Gold */
+    --dr-gold-soft: #eadcc6;
+    --dr-border: #debdb8;         /* Rose Quartz Antique Border */
+    --dr-border-soft: #ede0d8;
+    --text-main: #382427;         /* Deep Warm Espresso */
+    --text-muted: #6e5457;
+    --transit-bg: #edf3f7;
+    --transit-border: #bcd3e1;
+    --transit-text: #214f6b;
+    --transit-strong: #0f3044;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Gowun Dodum', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--paper-bg);
+    background-image: radial-gradient(rgba(175, 91, 105, 0.04) 1px, transparent 1px);
+    background-size: 4px 4px;
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 10px 12px 85px;
+    font-size: 14.5px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .accent-en { font-family: 'Nunito', sans-serif; font-weight: 800; }
+  a { color: inherit; }
+
+  /* ---------- Header ---------- */
+  .header {
+    text-align: center;
+    padding: 24px 14px 20px;
+    background: linear-gradient(135deg, #fffdfa 0%, #fbf3ec 55%, #f6e6e2 100%);
+    border-radius: 22px;
+    border: 2px dashed var(--dr-border);
+    box-shadow: 0 4px 18px rgba(120, 47, 60, 0.08);
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-decor {
+    font-size: 1.25rem;
+    letter-spacing: 5px;
+    margin-bottom: 4px;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--dr-primary);
+    color: #fff;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 4px 15px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+    box-shadow: 0 3px 10px rgba(175, 91, 105, 0.25);
+    font-family: 'Nunito', sans-serif;
+  }
+  .header h1 {
+    font-family: 'Nunito', 'Gowun Dodum', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--dr-primary-dark);
+    margin-bottom: 4px;
+    letter-spacing: -0.4px;
+  }
+  .header p {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  /* ---------- Ticket-Stub Style Day Tabs & 2x2 Quick Buttons ---------- */
+  .tab-wrapper {
+    position: sticky;
+    top: 6px;
+    z-index: 999;
+    margin-bottom: 14px;
+  }
+  .day-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .day-tab {
+    appearance: none;
+    border: 1.8px solid var(--dr-border);
+    background: rgba(255, 253, 250, 0.96);
+    backdrop-filter: blur(12px);
+    border-radius: 14px;
+    padding: 9px 6px 8px;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'Gowun Dodum', sans-serif;
+    color: var(--dr-primary-dark);
+    box-shadow: 0 4px 14px rgba(120, 47, 60, 0.08);
+    position: relative;
+    transition: all 0.2s;
+  }
+  .day-tab .tab-title { font-size: 1.02rem; font-weight: 800; display: block; }
+  .day-tab .tab-sub { font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 1px; font-weight: 600; }
+  .day-tab .tab-progress { font-size: 0.68rem; color: var(--dr-gold); display: block; margin-top: 3px; font-weight: 800; font-family: 'Nunito', sans-serif; }
+  .day-tab.active {
+    background: var(--dr-primary);
+    border-color: var(--dr-primary-dark);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(175, 91, 105, 0.3);
+  }
+  .day-tab.active .tab-sub { color: #fcedee; }
+  .day-tab.active .tab-progress { color: #fff3db; }
+  .day-tab::before, .day-tab::after {
+    content: '';
+    position: absolute;
+    width: 8px; height: 8px;
+    background: var(--paper-bg);
+    border-radius: 50%;
+    top: 50%; transform: translateY(-50%);
+  }
+  .day-tab::before { left: -5px; }
+  .day-tab::after { right: -5px; }
+
+  /* 2x2 Grid Buttons */
+  .quick-links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .quick-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    text-decoration: none;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 8px 6px;
+    border-radius: 12px;
+    color: var(--dr-primary-dark);
+    background: var(--paper-card);
+    border: 1.3px solid var(--dr-border);
+    box-shadow: 0 2px 6px rgba(120, 47, 60, 0.05);
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .quick-chip:active {
+    background: var(--paper-inner);
+    transform: scale(0.98);
+  }
+
+  /* Live Banner */
+  .live-banner {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: var(--dr-primary-dark);
+    color: #fff;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(120, 47, 60, 0.25);
+  }
+  .live-banner.show { display: flex; }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #fff;
+    flex-shrink: 0;
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.35; }
+  }
+
+  /* ---------- Panels & Cards ---------- */
+  .day-panel { display: none; }
+  .day-panel.active { display: block; }
+
+  .section-card {
+    background: var(--paper-card);
+    border-radius: 22px;
+    padding: 18px 14px;
+    margin-bottom: 20px;
+    border: 1.6px solid var(--dr-border);
+    box-shadow: 0 4px 16px rgba(120, 47, 60, 0.06);
+    position: relative;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed var(--dr-border);
+  }
+  .day-badge {
+    background: var(--dr-primary);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 3px 11px;
+    border-radius: 10px;
+    font-family: 'Nunito', sans-serif;
+    box-shadow: 0 2px 6px rgba(175, 91, 105, 0.25);
+  }
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--dr-primary-dark);
+    letter-spacing: -0.2px;
+  }
+
+  /* Return to Previous Schedule Banner Button */
+  .return-to-timeline-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff2f4;
+    border: 1.5px solid var(--dr-primary);
+    border-radius: 12px;
+    padding: 9px 12px;
+    margin-bottom: 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--dr-primary-dark);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(175, 91, 105, 0.15);
+  }
+  .return-to-timeline-bar:active {
+    background: var(--dr-primary);
+    color: #fff;
+  }
+
+  /* ---------- Illustrated City Map Card ---------- */
+  .city-map-card {
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1.5px solid var(--dr-border);
+    overflow: hidden;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 14px rgba(120, 47, 60, 0.08);
+  }
+  .city-map-head {
+    background: linear-gradient(135deg, #fbf2ea, #f6e3de);
+    padding: 10px 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1.5px solid var(--dr-border);
+  }
+  .city-map-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--dr-primary-dark);
+  }
+  .city-map-svg-wrap {
+    width: 100%;
+    background: #dbe6eb;
+    display: flex;
+    justify-content: center;
+    position: relative;
+  }
+  .city-map-svg-wrap svg {
+    width: 100%;
+    max-width: 440px;
+    height: auto;
+    display: block;
+  }
+
+  .arrow-strip-container {
+    padding: 12px;
+    background: #fffcf9;
+    border-top: 1.5px solid var(--dr-border-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+  }
+  .step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    border: 1.2px solid var(--dr-border);
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--dr-primary-dark);
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .step-num {
+    background: var(--dr-primary);
+    color: #fff;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+  }
+  .arrow-sep {
+    color: var(--dr-primary);
+    font-weight: 800;
+    font-size: 0.75rem;
+  }
+
+  /* ---------- Timeline with Checklists ---------- */
+  .timeline {
+    position: relative;
+    padding-left: 14px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--dr-border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 14px;
+    background: var(--paper-inner);
+    border-radius: 16px;
+    padding: 13px 40px 13px 14px;
+    border: 1.2px solid var(--dr-border-soft);
+    transition: background 0.2s, opacity 0.2s;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -14px;
+    top: 15px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dr-primary);
+    box-shadow: 0 0 0 3px #f7deda;
+  }
+  .timeline-item.highlight {
+    background: #fff8f5;
+    border: 1.5px solid var(--dr-border);
+  }
+  .timeline-item.highlight::before {
+    background: var(--dr-primary-dark);
+    box-shadow: 0 0 0 4px #ead3cd;
+  }
+
+  /* Checked State */
+  .timeline-item.done {
+    background: #eae3da;
+    opacity: 0.58;
+  }
+  .timeline-item.done .item-title {
+    text-decoration: line-through;
+    text-decoration-color: var(--text-muted);
+  }
+
+  .item-check {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.8px solid var(--dr-border);
+    background: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.2s;
+  }
+  .item-check svg { width: 12px; height: 12px; opacity: 0; }
+  .timeline-item.done .item-check {
+    background: var(--dr-primary-dark);
+    border-color: var(--dr-primary-dark);
+  }
+  .timeline-item.done .item-check svg { opacity: 1; }
+  .item-check svg path { stroke: #fff; }
+
+  .item-time {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: var(--dr-primary-dark);
+    margin-bottom: 3px;
+  }
+  .item-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .item-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+  .item-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+  .tag-food { background: #fceedc; color: #92510b; }
+  .tag-cafe { background: #f2eaf7; color: #6a4494; }
+  .tag-event { background: #f8e1e7; color: #912753; }
+  .tag-trans { background: #e7eff5; color: #215674; }
+  .tag-train { background: #e7f2eb; color: #26653d; }
+  .tag-pick { background: #f7e2e2; color: #942533; }
+
+  /* Map Link Button */
+  .place-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--dr-primary-dark);
+    text-decoration: none;
+    font-weight: 700;
+    background: #fff;
+    border: 1.3px solid var(--dr-border);
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    box-shadow: 0 2px 6px rgba(120, 47, 60, 0.05);
+  }
+  .place-link:active {
+    background: var(--dr-primary);
+    color: #fff;
+    border-color: var(--dr-primary);
+  }
+  .place-link.subway-link {
+    color: #245774;
+    border-color: #c4dbe8;
+    background: #f1f7fa;
+  }
+
+  .item-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+  .item-menu {
+    font-size: 0.79rem;
+    color: var(--dr-primary-dark);
+    background: #fbf0ee;
+    padding: 7px 10px;
+    border-radius: 10px;
+    margin-top: 6px;
+    border-left: 3.5px solid var(--dr-primary);
+  }
+
+  /* IMPROVED: Noticeable Collapsible Subway Button */
+  details.subway-detail {
+    margin-top: 8px;
+  }
+  details.subway-detail summary {
+    list-style: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    color: #1a4964;
+    background: #e9f2f7;
+    border: 1.5px solid #bcd6e5;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.81rem;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(33, 79, 107, 0.08);
+    transition: all 0.2s;
+  }
+  details.subway-detail summary::-webkit-details-marker { display: none; }
+  details.subway-detail summary:active {
+    background: #bcd6e5;
+  }
+  .subway-summary-badge {
+    background: #245774;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+  .subway-toggle-icon {
+    font-size: 0.85rem;
+    color: #245774;
+    transition: transform 0.2s;
+  }
+  details.subway-detail[open] .subway-toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  .subway-guide-box {
+    background: #f4f8fb;
+    border: 1.5px solid #bcd6e5;
+    border-top: none;
+    padding: 10px 12px;
+    border-radius: 0 0 12px 12px;
+    margin-top: -3px;
+    font-size: 0.81rem;
+    color: #204b62;
+    line-height: 1.52;
+  }
+  .subway-guide-box strong { color: #0d2838; }
+
+  .return-decision-card {
+    background: #fbf0ee;
+    border: 1.5px solid var(--dr-border);
+    border-radius: 16px;
+    padding: 13px;
+    margin-top: 6px;
+    font-size: 0.83rem;
+    line-height: 1.5;
+    color: var(--dr-primary-dark);
+  }
+
+  /* Bag Policy Box */
+  .bag-alert {
+    background: var(--paper-inner);
+    border: 1.5px solid var(--dr-border);
+    border-radius: 18px;
+    padding: 15px;
+  }
+  .bag-tag {
+    display: inline-block;
+    background: var(--dr-primary-dark);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+
+  /* Flight Info Card */
+  .flight-box {
+    background: #fff;
+    border: 1.5px solid var(--dr-border);
+    border-radius: 18px;
+    padding: 15px;
+    margin-bottom: 12px;
+  }
+  .flight-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed var(--dr-border);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .flight-code {
+    font-weight: 800;
+    font-size: 0.96rem;
+    color: var(--dr-primary-dark);
+  }
+  .flight-date {
+    font-size: 0.79rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .flight-route {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .airport-code {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.28rem;
+    font-weight: 800;
+    color: var(--text-main);
+  }
+  .flight-arrow {
+    color: var(--dr-primary);
+    font-weight: 800;
+  }
+  .flight-meta {
+    font-size: 0.81rem;
+    color: var(--text-muted);
+    background: var(--paper-inner);
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--dr-border-soft);
+  }
+
+  /* Transit Step Guide */
+  .transit-step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .transit-step {
+    display: flex;
+    gap: 12px;
+    background: var(--paper-inner);
+    border: 1px solid var(--dr-border-soft);
+    padding: 13px;
+    border-radius: 16px;
+  }
+  .step-num-circle {
+    background: var(--dr-primary);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-family: 'Nunito', sans-serif;
+  }
+  .step-content h4 {
+    font-size: 0.91rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 2px;
+  }
+  .step-content p {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 0.83rem;
+    color: var(--dr-primary);
+    margin-top: 26px;
+    line-height: 1.5;
+    font-weight: 700;
+  }
+
+  /* Sticky Back to Timeline Button */
+  .floating-back-btn {
+    display: none;
+    position: fixed;
+    bottom: 16px;
+    right: 14px;
+    z-index: 1000;
+    background: var(--dr-primary-dark);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 30px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-family: 'Gowun Dodum', sans-serif;
+    box-shadow: 0 4px 18px rgba(120, 47, 60, 0.4);
+    cursor: pointer;
+    animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes popUp {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .floating-back-btn.show {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-decor">🌸 🎀 🥂 👰‍♀️ 💖 ✨</div>
+    <div class="header-badge">Jungweon's Bachelorette Party 💍</div>
+    <h1>NYC Trip Itinerary 🗽</h1>
+    <p>2026. 10. 06 (화) – 10. 07 (수) 모바일 가이드</p>
+  </header>
+
+  <!-- Ticket-Stub Day Tabs & 2x2 Clean Fitted Reference Buttons -->
+  <div class="tab-wrapper">
+    <div class="day-tabs">
+      <button class="day-tab active" data-target="day1" onclick="switchDay('day1', this)">
+        <span class="tab-title">Day 1</span>
+        <span class="tab-sub">10.6 (화) · 딤섬 &amp; 콘서트</span>
+        <span class="tab-progress" id="progress-day1">0 / 18 완료</span>
+      </button>
+      <button class="day-tab" data-target="day2" onclick="switchDay('day2', this)">
+        <span class="tab-title">Day 2</span>
+        <span class="tab-sub">10.7 (수) · 먹킹로드</span>
+        <span class="tab-progress" id="progress-day2">0 / 18 완료</span>
+      </button>
+    </div>
+
+    <!-- 2x2 Grid: No Scrolling, 100% Screen Fit -->
+    <div class="quick-links-grid">
+      <a class="quick-chip" href="#bag-policy" onclick="saveReturnAnchor('bag-policy')">🎒 가방 규정</a>
+      <a class="quick-chip" href="#flight-info" onclick="saveReturnAnchor('flight-info')">✈️ 항공편 인포</a>
+      <a class="quick-chip" href="#transit-in" onclick="saveReturnAnchor('transit-in')">🚇 EWR➔호텔</a>
+      <a class="quick-chip" href="#transit-out" onclick="saveReturnAnchor('transit-out')">🚆 호텔➔EWR</a>
+    </div>
+
+    <!-- Live "지금 뭐하지" Banner -->
+    <div class="live-banner" id="live-banner">
+      <span class="live-dot"></span>
+      <span id="live-banner-text"></span>
+    </div>
+  </div>
+
+  <!-- ================= DAY 1 PANEL ================= -->
+  <div class="day-panel active" id="day1">
+    <section class="section-card">
+      <div class="section-head">
+        <span class="day-badge">DAY 1</span>
+        <div class="section-title">10/6 (화) 딤섬, 로스타코스 &amp; 콘서트 🎤</div>
+      </div>
+
+      <!-- Illustrated City Map (Day 1) -->
+      <div class="city-map-card">
+        <div class="city-map-head">
+          <span class="city-map-title">🗺️ 10/6 맨해튼 미드타운 동선 지도</span>
+          <span style="font-size:0.72rem; color:var(--dr-primary-dark); font-weight:700;">센트럴파크 남쪽 ↔ 34가</span>
+        </div>
+
+        <div class="city-map-svg-wrap">
+          <svg viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="pinShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#782f3c" flood-opacity="0.28" />
+              </filter>
+            </defs>
+
+            <!-- Water Background -->
+            <rect width="380" height="320" fill="#dbe6eb" />
+            <text x="14" y="160" font-size="8.5" fill="#587988" font-weight="800" letter-spacing="1" transform="rotate(-90 14,160)">HUDSON RIVER</text>
+            <text x="372" y="160" font-size="8.5" fill="#587988" font-weight="800" letter-spacing="1" transform="rotate(90 372,160)">EAST RIVER</text>
+
+            <!-- Manhattan Island -->
+            <path d="M 40,0 L 340,0 L 330,320 L 55,320 Z" fill="#fffdfa" stroke="#debdb8" stroke-width="1.5" />
+
+            <!-- Central Park -->
+            <rect x="110" y="0" width="160" height="50" rx="4" fill="#cbdad2" stroke="#a2bdaf" stroke-width="1" />
+            <text x="190" y="28" font-size="10.5" font-weight="800" fill="#2d5743" text-anchor="middle">🌳 CENTRAL PARK</text>
+
+            <!-- Major Avenues -->
+            <line x1="100" y1="50" x2="100" y2="320" stroke="#f6ede9" stroke-width="6" />
+            <line x1="100" y1="50" x2="100" y2="320" stroke="#e8d5ce" stroke-width="1.5" />
+            <text x="96" y="312" font-size="7" fill="#8f7375" font-weight="700">8th Ave</text>
+
+            <line x1="150" y1="50" x2="150" y2="320" stroke="#f6ede9" stroke-width="6" />
+            <line x1="150" y1="50" x2="150" y2="320" stroke="#e8d5ce" stroke-width="1.5" />
+            <text x="146" y="312" font-size="7" fill="#8f7375" font-weight="700">7th Ave</text>
+
+            <line x1="205" y1="50" x2="205" y2="320" stroke="#f6ede9" stroke-width="6" />
+            <line x1="205" y1="50" x2="205" y2="320" stroke="#e8d5ce" stroke-width="1.5" />
+            <text x="201" y="312" font-size="7" fill="#8f7375" font-weight="700">6th Ave</text>
+
+            <line x1="260" y1="50" x2="260" y2="320" stroke="#f6ede9" stroke-width="6" />
+            <line x1="260" y1="50" x2="260" y2="320" stroke="#e8d5ce" stroke-width="1.5" />
+            <text x="256" y="312" font-size="7" fill="#8f7375" font-weight="700">5th Ave</text>
+
+            <!-- Broadway -->
+            <line x1="130" y1="50" x2="235" y2="320" stroke="#f6e1ba" stroke-width="4.5" stroke-linecap="round" />
+            <text x="175" y="170" font-size="7.5" fill="#9e6e23" font-weight="800" transform="rotate(69 175,170)">BROADWAY</text>
+
+            <!-- Cross Streets -->
+            <line x1="50" y1="68" x2="330" y2="68" stroke="#debdb8" stroke-width="2" />
+            <text x="56" y="64" font-size="7.5" fill="#75474d" font-weight="800">W 57th St</text>
+
+            <line x1="50" y1="120" x2="330" y2="120" stroke="#ebd2ce" stroke-width="1.5" />
+            <text x="56" y="116" font-size="7.5" fill="#75474d" font-weight="700">W 50th St</text>
+
+            <line x1="50" y1="180" x2="330" y2="180" stroke="#debdb8" stroke-width="2" />
+            <text x="56" y="176" font-size="7.5" fill="#75474d" font-weight="800">42nd St (Times Sq)</text>
+
+            <line x1="50" y1="240" x2="330" y2="240" stroke="#debdb8" stroke-width="2.5" />
+            <text x="56" y="236" font-size="7.5" fill="#75474d" font-weight="800">34th St (Herald Sq / MSG)</text>
+
+            <!-- Route Path Lines -->
+            <path d="M 180,78 L 265,128" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
+            <path d="M 265,128 L 205,78" fill="none" stroke="#af5b69" stroke-width="2.5" stroke-dasharray="3,3" stroke-linecap="round" />
+            <path d="M 205,78 L 180,78" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
+            <path d="M 180,78 Q 140,160 148,248" fill="none" stroke="#326782" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3" />
+            <text x="132" y="160" font-size="7.5" fill="#326782" font-weight="800">🚇 N/Q/R (지하철)</text>
+            
+            <path d="M 148,248 L 148,272" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
+            <path d="M 148,272 L 120,244" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
+            <path d="M 120,244 Q 165,150 180,78" fill="none" stroke="#326782" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3" />
+
+            <!-- PINS -->
+            <g transform="translate(180, 78)" filter="url(#pinShadow)">
+              <circle cx="0" cy="0" r="11" fill="#782f3c" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">1,4,8</text>
+              <rect x="-66" y="-24" width="70" height="15" rx="4" fill="#67222e" />
+              <text x="-31" y="-13.5" font-size="7.5" font-weight="700" fill="#fff" text-anchor="middle">🏨 톰슨 호텔</text>
+            </g>
+
+            <g transform="translate(265, 128)" filter="url(#pinShadow)">
+              <circle cx="0" cy="0" r="10" fill="#af5b69" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">2</text>
+              <rect x="12" y="-8" width="66" height="15" rx="4" fill="#782f3c" />
+              <text x="45" y="2.5" font-size="7.5" font-weight="700" fill="#fff" text-anchor="middle">🥟 Joe's 딤섬</text>
+            </g>
+
+            <g transform="translate(205, 78)" filter="url(#pinShadow)">
+              <circle cx="0" cy="0" r="9" fill="#c17c87" stroke="#fff" stroke-width="1.5" />
+              <text x="0" y="3" font-size="8.5" font-weight="800" fill="#fff" text-anchor="middle">3</text>
+              <rect x="-10" y="12" width="64" height="14" rx="4" fill="#75434d" />
+              <text x="22" y="22" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">☕ Zibetto (아아)</text>
+            </g>
+
+            <g transform="translate(148, 248)" filter="url(#pinShadow)">
+              <circle cx="0" cy="0" r="10" fill="#af5b69" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">5</text>
+              <rect x="-70" y="-8" width="68" height="15" rx="4" fill="#782f3c" />
+              <text x="-36" y="2.5" font-size="7.5" font-weight="700" fill="#fff" text-anchor="middle">🌮 LOS TACOS</text>
+            </g>
+
+            <g transform="translate(148, 275)" filter="url(#pinShadow)">
+              <circle cx="0" cy="0" r="10" fill="#c17c87" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">6</text>
+              <rect x="13" y="-8" width="76" height="15" rx="4" fill="#75434d" />
+              <text x="51" y="2.5" font-size="7.5" font-weight="700" fill="#fff" text-anchor="middle">☕ Cafe Grumpy</text>
+            </g>
+
+            <g transform="translate(120, 244)" filter="url(#pinShadow)">
+              <circle cx="0" cy="0" r="12" fill="#782f3c" stroke="#fff" stroke-width="2" />
+              <text x="0" y="4" font-size="10" font-weight="800" fill="#fff" text-anchor="middle">7</text>
+              <rect x="-78" y="-22" width="76" height="16" rx="4" fill="#521620" />
+              <text x="-40" y="-11" font-size="7.5" font-weight="800" fill="#fff" text-anchor="middle">🎤 MSG 콘서트</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="arrow-strip-container">
+          <span class="step-pill"><span class="step-num">1</span> 톰슨 호텔</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">2</span> Joe's 딤섬</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">3</span> Zibetto(아아)</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">4</span> 호텔 단장</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">5</span> 로스타코스</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">6</span> Cafe Grumpy</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">7</span> MSG 콘서트</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">8</span> 호텔 꿀잠</span>
+        </div>
+      </div>
+
+      <!-- Timeline List -->
+      <div class="timeline">
+        <div class="timeline-item" id="item-d1-01" data-id="d1-01">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">05:30 – 07:00 AM</div>
+          <div class="item-title-row"><span class="item-title">공항 집결 및 이동 🚗</span><span class="item-tag tag-trans">이동</span></div>
+          <div class="item-desc">공항 집결 및 탑승 수속</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-02" data-id="d1-02">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">08:11 – 10:32 AM</div>
+          <div class="item-title-row"><span class="item-title">ATL 🛫 EWR 비행</span><span class="item-tag tag-trans">비행</span></div>
+          <a href="#flight-info" class="place-link" style="color: #782f3c; background: #fff2f4; border-color: #debdb8;" onclick="saveReturnAnchor('item-d1-02')">✈️ 항공편 상세 &amp; 실시간 게이트 조회</a>
+          <div class="item-desc">Frontier Airlines #2282편 탑승</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-03" data-id="d1-03">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">10:50 – 11:55 AM</div>
+          <div class="item-title-row"><span class="item-title">EWR ➔ 맨해튼 철도 이동 🚆</span><span class="item-tag tag-train">철도</span></div>
+          <div class="item-desc">AirTrain ➔ Newark Airport Station ➔ NJ Transit (NY Penn Station) ➔ N/Q/R 지하철로 57 St 역 하차</div>
+          <a href="#transit-in" class="place-link subway-link" onclick="saveReturnAnchor('item-d1-03')">🚇 상세 환승 단계 보기</a>
+        </div>
+
+        <div class="timeline-item highlight" id="item-d1-04" data-id="d1-04">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">12:00 – 12:20 PM</div>
+          <div class="item-title-row"><span class="item-title">1. 호텔 도착 &amp; 짐 보관 🧳</span><span class="item-tag tag-pick">호텔</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Thompson+Central+Park+New+York,+119+W+56th+St,+New+York,+NY" target="_blank" class="place-link">📍 길찾기: Thompson Central Park</a>
+          <div class="item-desc">체크인 전 컨시어지에 짐 보관</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-05" data-id="d1-05">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">12:20 – 12:35 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 12분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">호텔에서 49가 딤섬집으로 남쪽 0.5마일 이동</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-06" data-id="d1-06">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">12:35 – 01:40 PM</div>
+          <div class="item-title-row"><span class="item-title">2. 점심: Joe's Soup Dumplings 🥟</span><span class="item-tag tag-food">맛집</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Joe's+Home+of+Soup+Dumplings,+12+E+49th+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Joe's Home of Soup Dumplings</a>
+          <div class="item-menu">🍴 추천 메뉴: 시그니처 돼지고기 샤오롱바오, 게살 돼지고기 샤오롱바오, 상하이 볶음면</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-07" data-id="d1-07">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">01:40 – 01:52 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 11분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">49가에서 56가 Zibetto로 북쪽 0.5마일 도보 이동</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-08" data-id="d1-08">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">01:52 – 02:15 PM</div>
+          <div class="item-title-row"><span class="item-title">3. 1차 커피 타임: Zibetto ☕🧊</span><span class="item-tag tag-cafe">카페</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Zibetto+Espresso+Bar,+1385+6th+Ave,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Zibetto Espresso Bar</a>
+          <div class="item-menu">🍴 추천 메뉴: 진한 아이스 아메리카노, 미니 리코타 카놀리 테이크아웃</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-09" data-id="d1-09">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">02:15 – 02:18 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 2분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">Zibetto 나와서 반 블록 걸어 호텔 룸으로 복귀</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-10" data-id="d1-10">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">02:20 – 04:30 PM</div>
+          <div class="item-title-row"><span class="item-title">4. 호텔 체크인 &amp; 콘서트 단장 💄✨</span><span class="item-tag tag-event">준비</span></div>
+          <div class="item-desc">얼리 체크인, 편안한 휴식, 의상 및 메이크업 정비</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-11" data-id="d1-11">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">04:35 – 04:55 PM</div>
+          <div class="item-title-row"><span class="item-title">지하철 이동 (15분) 🚇</span><span class="item-tag tag-train">지하철</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=57+St+-+7+Av+Subway+Station,+New+York,+NY&travelmode=walking" target="_blank" class="place-link subway-link">📍 1단계: 57 St-7 Av 역 출입구 도보 길찾기 (2분)</a>
+          
+          <!-- IMPROVED COLLAPSIBLE SUBWAY BOX -->
+          <details class="subway-detail">
+            <summary>
+              <span>🚇 지하철 탑승 및 출구 상세 안내</span>
+              <span class="subway-toggle-icon">▼</span>
+            </summary>
+            <div class="subway-guide-box">
+              • <strong>탑승역</strong>: 57 St-7 Av 역 (호텔 나와 7번가 쪽으로 2분)<br>
+              • <strong>노선 &amp; 방향</strong>: <strong>N, Q, R 선 (Downtown / Brooklyn 방면)</strong><br>
+              • <strong>하차역</strong>: 3정거장 뒤 <strong>34 St-Herald Sq 역</strong> 하차<br>
+              • <strong>출구</strong>: 34th St / Broadway 방면 출구로 나와 33가로 도보 2분
+            </div>
+          </details>
+        </div>
+
+        <div class="timeline-item" id="item-d1-12" data-id="d1-12">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">05:00 – 05:45 PM</div>
+          <div class="item-title-row"><span class="item-title">5. 저녁 식사: LOS TACOS No.1 🌮</span><span class="item-tag tag-food">맛집</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=LOS+TACOS+No.1,+201+W+33rd+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: LOS TACOS No.1 (33가)</a>
+          <div class="item-menu">🍴 추천 메뉴: 아도바다(양념 돼지고기) 타코(콘또띠아 추천), 카르네 아사다(소고기) 타코, 퀘사디야</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-13" data-id="d1-13">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">05:45 – 05:48 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 2~3분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">타코집 나와서 7번가 길 건너 카페로 이동</div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-14" data-id="d1-14">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">05:50 – 07:15 PM</div>
+          <div class="item-title-row"><span class="item-title">6. 카페 휴식: Cafe Grumpy ☕🛋️</span><span class="item-tag tag-cafe">카페</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Cafe+Grumpy+-+Fashion+District,+224+W+30th+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Cafe Grumpy (도보 2~3분)</a>
+          <div class="item-menu">
+            🍴 <strong>Cafe Grumpy (또는 Penn 1 Bluestone Lane)</strong><br>
+            • <strong>특징</strong>: 콘서트장 바로 앞 위치, 여유로운 좌석 휴식<br>
+            • <strong>추천</strong>: 시원한 아이스 아메리카노, 콜드브루, 쿠키
+          </div>
+        </div>
+
+        <div class="timeline-item" id="item-d1-15" data-id="d1-15">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">07:15 – 07:20 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 2~3분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">맞은편 Infosys Theater at MSG로 이동</div>
+        </div>
+
+        <div class="timeline-item highlight" id="item-d1-16" data-id="d1-16">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">07:30 – 10:30 PM</div>
+          <div class="item-title-row"><span class="item-title">7. MONSTA X 콘서트 💖🎶</span><span class="item-tag tag-event">하이라이트</span></div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=Madison+Square+Garden,+4+Pennsylvania+Plaza,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: MSG 콘서트장</a>
+            <a href="#bag-policy" class="place-link" style="color: #782f3c; background: #fff2f4; border-color: #dcb3b8;" onclick="saveReturnAnchor('item-d1-16')">🎒 콘서트장 가방 규정 확인</a>
+          </div>
+          <div class="item-desc">Infosys Theater at MSG (오후 8시 공연 시작) 관람!</div>
+        </div>
+
+        <div class="timeline-item highlight" id="item-d1-17" data-id="d1-17">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">10:30 – 11:00 PM</div>
+          <div class="item-title-row"><span class="item-title">8. 콘서트 종료 ➔ 호텔 복귀 (추천 경로) 🚇</span><span class="item-tag tag-train">강추</span></div>
+          <div class="return-decision-card">
+            <strong>🚨 야간 복귀 교통편 안내 (지하철 추천):</strong><br>
+            • <strong>택시/차량 호출</strong>: 공연 직후 34가 인근 인파 밀집 및 차량 정체로 대기 시간이 매우 깁니다.<br>
+            • <strong>지하철 이용</strong>: 관람객 이동 동선 및 경찰 배치로 안전하며, N/Q/R 탑승 시 <strong>단 6~8분 만에 호텔 앞(57 St) 도착</strong>합니다.
+          </div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=34+St-Herald+Sq+Subway+Station,+New+York,+NY&travelmode=walking" target="_blank" class="place-link subway-link" style="margin-top:8px;">📍 1단계: 34 St-Herald Sq 역 출입구 도보 길찾기 (4분)</a>
+          
+          <details class="subway-detail">
+            <summary>
+              <span>🚇 호텔 복귀 지하철 탑승 안내</span>
+              <span class="subway-toggle-icon">▼</span>
+            </summary>
+            <div class="subway-guide-box">
+              • <strong>탑승역</strong>: 34 St-Herald Sq 역 (MSG 나와서 6번가 코너 방향)<br>
+              • <strong>노선 &amp; 방향</strong>: <strong>N, Q, R 선 (Uptown &amp; Queens 방면)</strong><br>
+              • <strong>하차역</strong>: 3정거장 뒤 <strong>57 St-7 Av 역</strong> 하차<br>
+              • <strong>출구</strong>: 56th St 출구로 나오면 호텔까지 도보 2분!
+            </div>
+          </details>
+        </div>
+
+        <div class="timeline-item" id="item-d1-18" data-id="d1-18">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">11:00 PM ~</div>
+          <div class="item-title-row"><span class="item-title">호텔 도착 후 휴식 &amp; 취침 🛌💤</span><span class="item-tag tag-event">취침</span></div>
+          <div class="item-desc">호텔 복귀 후 편안하게 씻고 취침 및 충전</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= DAY 2 PANEL ================= -->
+  <div class="day-panel" id="day2">
+    <section class="section-card">
+      <div class="section-head">
+        <span class="day-badge">DAY 2</span>
+        <div class="section-title">10/7 (수) 웨스트빌리지 ➔ 플랫아이언 ➔ 감미옥 🧁</div>
+      </div>
+
+      <!-- Illustrated City Map (Day 2) -->
+      <div class="city-map-card">
+        <div class="city-map-head">
+          <span class="city-map-title">🗺️ 10/7 원웨이 투어 동선 지도</span>
+          <span style="font-size:0.72rem; color:var(--dr-primary-dark); font-weight:700;">웨스트빌리지 ➔ 플랫아이언 ➔ 32가</span>
+        </div>
+
+        <div class="city-map-svg-wrap">
+          <svg viewBox="0 0 380 340" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <filter id="pinShadow2" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#782f3c" flood-opacity="0.28" />
+              </filter>
+            </defs>
+
+            <rect width="380" height="340" fill="#dbe6eb" />
+            <text x="14" y="170" font-size="8.5" fill="#587988" font-weight="800" letter-spacing="1" transform="rotate(-90 14,170)">HUDSON RIVER</text>
+            <text x="372" y="170" font-size="8.5" fill="#587988" font-weight="800" letter-spacing="1" transform="rotate(90 372,170)">EAST RIVER</text>
+
+            <path d="M 40,0 L 340,0 L 320,340 L 70,340 Z" fill="#fffdfa" stroke="#debdb8" stroke-width="1.5" />
+
+            <rect x="50" y="2" width="280" height="42" fill="#fbf5ee" stroke="#ebd5ce" />
+            <text x="190" y="22" font-size="9" font-weight="800" fill="#75474d" text-anchor="middle">MIDTOWN (56th St Hotel / 32nd St K-Town)</text>
+
+            <line x1="50" y1="95" x2="330" y2="95" stroke="#debdb8" stroke-width="2" />
+            <text x="56" y="90" font-size="7.5" fill="#75474d" font-weight="800">23rd St (Flatiron / Madison Sq Park)</text>
+            <rect x="220" y="70" width="38" height="22" rx="2" fill="#cbdad2" stroke="#a2bdaf" />
+            <text x="239" y="84" font-size="6" font-weight="800" fill="#2d5743" text-anchor="middle">Madison Sq</text>
+
+            <line x1="50" y1="165" x2="330" y2="165" stroke="#debdb8" stroke-width="2" />
+            <text x="56" y="160" font-size="7.5" fill="#75474d" font-weight="800">14th St (Union Sq)</text>
+
+            <rect x="65" y="175" width="140" height="135" rx="6" fill="#fbf1ec" stroke="#debdb8" stroke-width="1.2" />
+            <text x="135" y="190" font-size="8.5" font-weight="800" fill="#782f3c" text-anchor="middle">WEST VILLAGE</text>
+
+            <rect x="215" y="220" width="48" height="30" rx="3" fill="#cbdad2" stroke="#a2bdaf" />
+            <text x="239" y="238" font-size="6.5" font-weight="800" fill="#2d5743" text-anchor="middle">Wash. Sq</text>
+
+            <line x1="210" y1="40" x2="230" y2="330" stroke="#f6e1ba" stroke-width="4.5" />
+            <text x="232" y="130" font-size="7.5" fill="#9e6e23" font-weight="800">Broadway</text>
+
+            <!-- Route Path -->
+            <path d="M 170,22 Q 120,90 100,205" fill="none" stroke="#326782" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3" />
+            <text x="94" y="115" font-size="7.5" fill="#326782" font-weight="800">🚇 N/Q/R (지하철)</text>
+
+            <path d="M 100,205 L 85,235 L 125,265" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M 125,265 L 205,255" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
+
+            <path d="M 205,255 Q 230,170 238,105" fill="none" stroke="#326782" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3" />
+            <text x="236" y="195" font-size="7.5" fill="#326782" font-weight="800">🚇 지하철 4분</text>
+
+            <path d="M 238,105 L 210,36" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
+            <text x="228" y="65" font-size="7" fill="#782f3c" font-weight="800">🚶 도보 9분</text>
+
+            <path d="M 210,36 L 170,22" fill="none" stroke="#326782" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3,3" />
+
+            <!-- PINS -->
+            <g transform="translate(170, 22)" filter="url(#pinShadow2)">
+              <circle cx="0" cy="0" r="11" fill="#782f3c" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">1,8</text>
+              <rect x="-66" y="-19" width="68" height="14" rx="3" fill="#67222e" />
+              <text x="-32" y="-9" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">🏨 톰슨 호텔</text>
+            </g>
+
+            <g transform="translate(100, 205)" filter="url(#pinShadow2)">
+              <circle cx="0" cy="0" r="10" fill="#af5b69" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">2</text>
+              <rect x="-68" y="-16" width="66" height="14" rx="3" fill="#782f3c" />
+              <text x="-35" y="-6" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">🥯 아폴로 베이글</text>
+            </g>
+
+            <g transform="translate(85, 235)" filter="url(#pinShadow2)">
+              <circle cx="0" cy="0" r="9" fill="#c17c87" stroke="#fff" stroke-width="1.5" />
+              <text x="0" y="3" font-size="8.5" font-weight="800" fill="#fff" text-anchor="middle">3</text>
+              <rect x="-66" y="8" width="66" height="14" rx="3" fill="#75434d" />
+              <text x="-33" y="18" font-size="6.8" font-weight="700" fill="#fff" text-anchor="middle">🧁 매그놀리아(아아)</text>
+            </g>
+
+            <g transform="translate(125, 265)" filter="url(#pinShadow2)">
+              <circle cx="0" cy="0" r="10" fill="#af5b69" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">4</text>
+              <rect x="-10" y="12" width="62" height="14" rx="3" fill="#782f3c" />
+              <text x="21" y="22" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">🍕 L'Industrie</text>
+            </g>
+
+            <g transform="translate(205, 255)" filter="url(#pinShadow2)">
+              <circle cx="0" cy="0" r="10" fill="#af5b69" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">5</text>
+              <rect x="-25" y="-18" width="54" height="14" rx="3" fill="#782f3c" />
+              <text x="2" y="-8" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">🍟 감자튀김</text>
+            </g>
+
+            <g transform="translate(238, 105)" filter="url(#pinShadow2)">
+              <circle cx="0" cy="0" r="11" fill="#782f3c" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9.5" font-weight="800" fill="#fff" text-anchor="middle">6</text>
+              <rect x="13" y="-8" width="76" height="15" rx="4" fill="#67222e" />
+              <text x="51" y="2.5" font-size="7.2" font-weight="800" fill="#fff" text-anchor="middle">🍰 Lysée (디저트)</text>
+            </g>
+
+            <g transform="translate(210, 36)" filter="url(#pinShadow2)">
+              <circle cx="0" cy="0" r="11" fill="#782f3c" stroke="#fff" stroke-width="2" />
+              <text x="0" y="3.5" font-size="9.5" font-weight="800" fill="#fff" text-anchor="middle">7</text>
+              <rect x="13" y="-7" width="56" height="14" rx="3" fill="#67222e" />
+              <text x="41" y="3" font-size="7" font-weight="700" fill="#fff" text-anchor="middle">🍲 감미옥 저녁</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="arrow-strip-container">
+          <span class="step-pill"><span class="step-num">1</span> 호텔 조식</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">2</span> 베이글</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">3</span> 매그놀리아(아아)</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">4</span> L'Industrie 피자</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">5</span> 감튀</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">6</span> Lysée(디저트)</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">7</span> 감미옥</span>
+          <span class="arrow-sep">➔</span>
+          <span class="step-pill"><span class="step-num">8</span> 짐픽업</span>
+        </div>
+      </div>
+
+      <!-- Timeline List -->
+      <div class="timeline">
+        <div class="timeline-item" id="item-d2-01" data-id="d2-01">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">08:30 – 10:00 AM</div>
+          <div class="item-title-row"><span class="item-title">1. 호텔 조식 🥞☕</span><span class="item-tag tag-food">조식</span></div>
+          <div class="item-desc">Thompson Central Park 조식 (Parkside Room)</div>
+          <div class="item-menu">🍴 추천 메뉴: 아보카도 토스트, 에그베네딕트, 버터밀크 팬케이크, 모닝 커피</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-02" data-id="d2-02">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">10:00 – 11:00 AM</div>
+          <div class="item-title-row"><span class="item-title">짐 패킹 &amp; 체크아웃 🧳</span><span class="item-tag tag-trans">호텔</span></div>
+          <div class="item-desc">11:00 체크아웃 후 컨시어지에 짐 보관 완료 후 출발</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-03" data-id="d2-03">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">11:00 – 11:25 AM</div>
+          <div class="item-title-row"><span class="item-title">지하철 이동 (웨스트빌리지) 🚇</span><span class="item-tag tag-train">지하철</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=57+St+-+7+Av+Subway+Station,+New+York,+NY&travelmode=walking" target="_blank" class="place-link subway-link">📍 1단계: 57 St-7 Av 역 출입구 도보 길찾기 (2분)</a>
+          
+          <details class="subway-detail">
+            <summary>
+              <span>🚇 웨스트빌리지행 지하철 안내</span>
+              <span class="subway-toggle-icon">▼</span>
+            </summary>
+            <div class="subway-guide-box">
+              • <strong>탑승역</strong>: 57 St-7 Av 역<br>
+              • <strong>노선 &amp; 방향</strong>: <strong>N, Q, R 선 (Downtown / Brooklyn 방면)</strong><br>
+              • <strong>하차역</strong>: 14 St-Union Sq 역 하차 후 L선 환승하여 <strong>6 Av 역</strong> 하차 (또는 57 St/7 Av 역에서 1/2선 타고 <strong>Christopher St-Sheridan Sq 역</strong> 하차)<br>
+              • <strong>출구</strong>: 73 Greenwich Ave(아폴로 베이글) 도보 4분
+            </div>
+          </details>
+        </div>
+
+        <div class="timeline-item" id="item-d2-04" data-id="d2-04">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">11:30 AM – 12:20 PM</div>
+          <div class="item-title-row"><span class="item-title">2. 아폴로 베이글 🥯✨</span><span class="item-tag tag-food">먹방 #1</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Apollo+Bagels,+73+Greenwich+Ave,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Apollo Bagels (그리니치점)</a>
+          <div class="item-menu">🍴 추천 메뉴: 토마토 베이글(신선한 토마토+크림치즈), 훈제연어(Lox) 베이글</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-05" data-id="d2-05">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">12:20 – 12:25 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 4분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">Greenwich Ave 나와서 Bleecker St 방향으로 300m 직진</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-06" data-id="d2-06">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">12:25 – 01:05 PM</div>
+          <div class="item-title-row"><span class="item-title">3. 매그놀리아 &amp; 아아 ☕🧊</span><span class="item-tag tag-cafe">디저트</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Magnolia+Bakery,+401+Bleecker+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Magnolia Bakery 본점</a>
+          <div class="item-menu">🍴 추천 메뉴: 클래식 바나나푸딩, 컵케이크 + 시원한 아이스 아메리카노</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-07" data-id="d2-07">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">01:05 – 01:08 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 2~3분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">블리커 스트리트에서 크리스토퍼 스트리트 코너 돌기 (150m)</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-08" data-id="d2-08">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">01:10 – 02:05 PM</div>
+          <div class="item-title-row"><span class="item-title">4. L'Industrie 피자 🍕🔥</span><span class="item-tag tag-food">먹방 #2</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=L'Industrie+Pizzeria+West+Village,+104+Christopher+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: L'Industrie Pizzeria</a>
+          <div class="item-menu">🍴 추천 메뉴: 버라타 슬라이스(Burrata Slice), 무화과 잼 베이컨, 페퍼로니</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-09" data-id="d2-09">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">02:05 – 02:15 PM</div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 8~9분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-desc">크리스토퍼가 ➔ 6번가 횡단 ➔ 맥두갈 스트리트 (0.4마일)</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-10" data-id="d2-10">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">02:15 – 03:00 PM</div>
+          <div class="item-title-row"><span class="item-title">5. Pommes Frites 감자튀김 🍟</span><span class="item-tag tag-food">먹방 #3</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Pommes+Frites,+128+MacDougal+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Pommes Frites</a>
+          <div class="item-menu">🍴 추천 메뉴: 벨기에 감자튀김 + 망고 마요네즈 소스, 와사비 마요, 트러플 마요</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-11" data-id="d2-11">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">03:00 – 03:15 PM</div>
+          <div class="item-title-row"><span class="item-title">플랫아이언 지하철 이동 (10분) 🚇</span><span class="item-tag tag-train">지하철</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=West+4+St-Wash+Sq+Subway+Station,+New+York,+NY&travelmode=walking" target="_blank" class="place-link subway-link">📍 1단계: W 4 St-Wash Sq 역 출입구 도보 길찾기 (3분)</a>
+          
+          <details class="subway-detail">
+            <summary>
+              <span>🚇 플랫아이언(23가) 방면 지하철 안내</span>
+              <span class="subway-toggle-icon">▼</span>
+            </summary>
+            <div class="subway-guide-box">
+              • <strong>탑승역</strong>: W 4 St-Wash Sq 역 (도보 3분)<br>
+              • <strong>노선 &amp; 방향</strong>: <strong>F, M선 (Uptown 방면)</strong> ➔ 2정거장 뒤 <strong>23 St 역</strong> 하차 (단 4분 소요)<br>
+              • <strong>출구</strong>: 23rd St / 5th Ave 출구로 나와 매디슨스퀘어 파크 감상
+            </div>
+          </details>
+        </div>
+
+        <div class="timeline-item highlight" id="item-d2-12" data-id="d2-12">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">03:15 – 04:30 PM</div>
+          <div class="item-title-row"><span class="item-title">6. 디저트 타임: Lysée (리제) 🧁🍰</span><span class="item-tag tag-cafe">디저트</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Lysee,+44+E+21st+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Lysée (44 E 21st St, 도보 3분)</a>
+          <div class="item-menu">
+            🍴 <strong>뉴욕 최고 화제의 디저트 부티크: Lysée</strong><br>
+            • <strong>특징</strong>: 프렌치-코리안 하이엔드 페이스트리 &amp; 여유로운 티타임<br>
+            • <strong>추천 메뉴</strong>: 시그니처 Corn(옥수수) 무스 케이크, 브라운라이스 무스, 아이스 아메리카노<br>
+            • *(취향에 따라 인근 Eataly Flatiron 젤라또/티라미수 선택 가능)*
+          </div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-13" data-id="d2-13">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">04:30 – 04:55 PM</div>
+          <div class="item-title-row"><span class="item-title">매디슨 스퀘어 파크 &amp; 브로드웨이 산책 🚶‍♀️</span><span class="item-tag tag-event">산책</span></div>
+          <div class="item-desc">플랫아이언 빌딩 주변을 거쳐 브로드웨이를 따라 북쪽으로 이동 (0.5마일, 도보 9~10분)</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-14" data-id="d2-14">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">05:00 – 06:10 PM</div>
+          <div class="item-title-row"><span class="item-title">7. 저녁 식사: 감미옥 (Gammeeok) 🍲</span><span class="item-tag tag-food">든든한 한끼</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Gammeeok,+9+W+32nd+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: 감미옥 (9 W 32nd St)</a>
+          <div class="item-menu">🍴 추천 메뉴: 맑고 진한 설렁탕, 도가니탕, 모둠 수육<br><strong style="color:var(--dr-primary-dark);">★ 06:10 PM 출발 필수!</strong></div>
+        </div>
+
+        <div class="timeline-item highlight" id="item-d2-15" data-id="d2-15">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">06:10 – 06:30 PM</div>
+          <div class="item-title-row"><span class="item-title">K-Town ➔ 톰슨 호텔 지하철 이동 🚇</span><span class="item-tag tag-train">이동</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=34+St-Herald+Sq+Subway+Station,+New+York,+NY&travelmode=walking" target="_blank" class="place-link subway-link">📍 1단계: 34 St-Herald Sq 역 출입구 도보 길찾기 (1분)</a>
+          
+          <details class="subway-detail">
+            <summary>
+              <span>🚇 호텔행 지하철 탑승 상세 안내</span>
+              <span class="subway-toggle-icon">▼</span>
+            </summary>
+            <div class="subway-guide-box">
+              • <strong>탑승역</strong>: 34 St-Herald Sq 역 (감미옥 바로 코너 앞)<br>
+              • <strong>노선 &amp; 방향</strong>: <strong>N, Q, R 선 (Uptown &amp; Queens 방면)</strong><br>
+              • <strong>하차역</strong>: 3정거장 뒤 <strong>57 St-7 Av 역</strong> 하차 (약 6분 소요)<br>
+              • <strong>출구</strong>: 56th St 출구로 나와 6번가 방향 도보 2분
+            </div>
+          </details>
+        </div>
+
+        <div class="timeline-item highlight" id="item-d2-16" data-id="d2-16">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">06:30 – 06:45 PM</div>
+          <div class="item-title-row"><span class="item-title">8. 호텔 짐 픽업 🧳</span><span class="item-tag tag-pick">정시 도착</span></div>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Thompson+Central+Park+New+York,+119+W+56th+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 도보 길찾기: Thompson Central Park</a>
+          <div class="item-desc"><strong>정확히 6:30 PM 도착!</strong> 짐 수령 후 Penn Station 이동</div>
+        </div>
+
+        <div class="timeline-item" id="item-d2-17" data-id="d2-17">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">06:50 – 07:55 PM</div>
+          <div class="item-title-row"><span class="item-title">EWR 공항 철도 복귀 🚆</span><span class="item-tag tag-train">NJ Transit</span></div>
+          <div class="item-desc">Penn Station ➔ NJ Transit (~25분) ➔ AirTrain (~10분) ➔ 공항 안전 도착</div>
+          <a href="#transit-out" class="place-link subway-link" onclick="saveReturnAnchor('item-d2-17')">🚇 상세 공항 복귀 단계 보기</a>
+        </div>
+
+        <div class="timeline-item" id="item-d2-18" data-id="d2-18">
+          <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
+          <div class="item-time">10:29 PM</div>
+          <div class="item-title-row"><span class="item-title">ATL 귀국 비행 🛫</span><span class="item-tag tag-trans">비행</span></div>
+          <a href="#flight-info" class="place-link" style="color: #782f3c; background: #fff2f4; border-color: #debdb8;" onclick="saveReturnAnchor('item-d2-18')">✈️ 귀국편 상세 &amp; EWR 게이트 확인</a>
+          <div class="item-desc">Frontier Airlines #1157편 탑승</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 3. BAG POLICY -->
+  <section id="bag-policy" class="section-card">
+    <div class="return-to-timeline-bar" onclick="returnToLastAnchor()">
+      <span>↩️ 방금 보던 일정으로 돌아가기</span>
+      <span>닫기 ✕</span>
+    </div>
+    <div class="section-head">
+      <span class="day-badge">POLICY</span>
+      <div class="section-title">MSG 콘서트장 가방 규정 🎒</div>
+    </div>
+    <div class="bag-alert">
+      <span class="bag-tag">INFOSYS THEATER AT MSG</span>
+      <h4 style="font-size:0.92rem; font-weight:800; color:var(--dr-primary-dark); margin-bottom:6px;">가방 규격 제한 안내 (엄격 적용)</h4>
+      <p style="font-size:0.83rem; color:var(--text-main); line-height:1.5;">
+        • <strong>반입 가능 규격</strong>: 가로 25cm × 세로 20cm × 폭 12cm (<strong>10″ × 8″ × 5″ 이하</strong>)의 소형 크로스백 또는 클러치만 허용됩니다.<br>
+        • <strong>백팩 반입 금지</strong>: 투명 백팩을 포함한 모든 형태의 백팩은 크기와 관계없이 반입이 제한됩니다.<br>
+        • <strong>호텔 짐 보관 권장</strong>: 큰 가방이나 쇼핑백은 공연 전 호텔에 보관 후, 필수 소지품(휴대폰, 지갑, 립제품 등)만 가볍게 지참하시기 바랍니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4. FLIGHT INFO -->
+  <section id="flight-info" class="section-card">
+    <div class="return-to-timeline-bar" onclick="returnToLastAnchor()">
+      <span>↩️ 방금 보던 일정으로 돌아가기</span>
+      <span>닫기 ✕</span>
+    </div>
+    <div class="section-head">
+      <span class="day-badge">FLIGHT</span>
+      <div class="section-title">항공편 운항 정보 ✈️</div>
+    </div>
+
+    <!-- Flight 1 -->
+    <div class="flight-box">
+      <div class="flight-head">
+        <span class="flight-code">Frontier Airlines #2282</span>
+        <span class="flight-date">2026. 10. 06 (화)</span>
+      </div>
+      <div class="flight-route">
+        <div><div class="airport-code">ATL</div><div style="font-size:0.75rem; color:var(--text-muted);">애틀랜타 하츠필드</div></div>
+        <div class="flight-arrow">✈️ 08:11 AM ➔ 10:32 AM</div>
+        <div style="text-align:right;"><div class="airport-code">EWR</div><div style="font-size:0.75rem; color:var(--text-muted);">뉴어크 공항</div></div>
+      </div>
+      <div class="flight-meta">
+        • 출발 시간: <strong>08:11 AM</strong> / 도착 시간: <strong>10:32 AM</strong><br>
+        • 탑승 게이트: <strong>당일 출발 2~3시간 전 배정</strong>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px;">
+        <a href="https://www.flightaware.com/live/flight/FFT2282" target="_blank" class="place-link" style="color:#782f3c; background:#fff2f4; border-color:#debdb8;">
+          🟢 실시간 게이트 &amp; 항공편 조회 (FlightAware #2282)
+        </a>
+        <a href="https://www.flyfrontier.com/travel/my-trips/flight-status/" target="_blank" class="place-link" style="color:#214f6b; background:#edf3f7; border-color:#bcd3e1;">
+          ✈️ 프론티어(Frontier) 공식 실시간 출도착 조회
+        </a>
+      </div>
+    </div>
+
+    <!-- Flight 2 -->
+    <div class="flight-box">
+      <div class="flight-head">
+        <span class="flight-code">Frontier Airlines #1157</span>
+        <span class="flight-date">2026. 10. 07 (수)</span>
+      </div>
+      <div class="flight-route">
+        <div><div class="airport-code">EWR</div><div style="font-size:0.75rem; color:var(--text-muted);">뉴어크 공항</div></div>
+        <div class="flight-arrow">✈️ 10:29 PM ➔ 01:00 AM+</div>
+        <div style="text-align:right;"><div class="airport-code">ATL</div><div style="font-size:0.75rem; color:var(--text-muted);">애틀랜타 하츠필드</div></div>
+      </div>
+      <div class="flight-meta">
+        • 출발 시간: <strong>10:29 PM</strong> / 애틀랜타 복귀<br>
+        • 탑승 게이트: <strong>당일 EWR 전광판 및 모바일 확인</strong>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px;">
+        <a href="https://www.flightaware.com/live/flight/FFT1157" target="_blank" class="place-link" style="color:#782f3c; background:#fff2f4; border-color:#debdb8;">
+          🟢 실시간 게이트 &amp; 항공편 조회 (FlightAware #1157)
+        </a>
+        <a href="https://www.newarkairport.com/flights/flight-status" target="_blank" class="place-link" style="color:#214f6b; background:#edf3f7; border-color:#bcd3e1;">
+          🏢 뉴어크 공항(EWR) 공식 실시간 출도착/게이트 조회
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. TRANSIT GUIDE 1: EWR -> HOTEL -->
+  <section id="transit-in" class="section-card">
+    <div class="return-to-timeline-bar" onclick="returnToLastAnchor()">
+      <span>↩️ 방금 보던 일정으로 돌아가기</span>
+      <span>닫기 ✕</span>
+    </div>
+    <div class="section-head">
+      <span class="day-badge">TRANSIT</span>
+      <div class="section-title">EWR 공항 ➔ 톰슨 호텔 상세 동선 🚇</div>
+    </div>
+    
+    <div class="transit-step-list">
+      <div class="transit-step">
+        <div class="step-num-circle">1</div>
+        <div class="step-content">
+          <h4>EWR 터미널에서 AirTrain 탑승</h4>
+          <p>비행기 하차 후 공항 내부의 <strong>AirTrain</strong> 표지판을 따라 이동합니다. 무료 공항 내 모노레일인 AirTrain을 타고 <strong>Newark Liberty Airport Station(기차역)</strong>까지 이동합니다 (약 7~10분 소요).</p>
+        </div>
+      </div>
+
+      <div class="transit-step">
+        <div class="step-num-circle">2</div>
+        <div class="step-content">
+          <h4>NJ Transit 기차 탑승 (NY Penn Station 행)</h4>
+          <p>기차역 개찰구 앞 키오스크(NJ Transit)에서 <strong>NY Penn Station</strong> 행 티켓을 구매합니다 ($15.75). 플랫폼에서 <strong>Northeast Corridor</strong> 또는 <strong>North Jersey Coast Line</strong>을 탑승하여 맨해튼 <strong>New York Penn Station</strong>까지 직행합니다 (~25분 소요).</p>
+        </div>
+      </div>
+
+      <div class="transit-step">
+        <div class="step-num-circle">3</div>
+        <div class="step-content">
+          <h4>Penn Station ➔ 지하철 N/Q/R 갈아타기</h4>
+          <p>Penn Station에 도착하면 지하철 표지판을 따라 <strong>34 St-Herald Sq</strong> 방향 지하철 통로로 이동합니다. <strong>N, Q, R 선 (Uptown / Queens 방향)</strong>을 탑승합니다.</p>
+        </div>
+      </div>
+
+      <div class="transit-step">
+        <div class="step-num-circle">4</div>
+        <div class="step-content">
+          <h4>57 St-7 Av 역 하차 후 호텔 도보 (2분)</h4>
+          <p>지하철 탑승 후 3정거장 뒤 <strong>57 St-7 Av 역</strong>에서 하차합니다. 56th St 출구로 나와 6번가 방향으로 반 블록 직진하면 <strong>Thompson Central Park (119 W 56th St)</strong> 정문입니다.</p>
+          <a href="https://www.google.com/maps/dir/?api=1&origin=57+St+-+7+Av+Subway+Station,+New+York,+NY&destination=Thompson+Central+Park+New+York,+119+W+56th+St,+New+York,+NY&travelmode=walking" target="_blank" class="place-link">📍 57번가 역에서 호텔 도보 경로 보기</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. TRANSIT GUIDE 2: HOTEL -> EWR -->
+  <section id="transit-out" class="section-card">
+    <div class="return-to-timeline-bar" onclick="returnToLastAnchor()">
+      <span>↩️ 방금 보던 일정으로 돌아가기</span>
+      <span>닫기 ✕</span>
+    </div>
+    <div class="section-head">
+      <span class="day-badge">TRANSIT</span>
+      <div class="section-title">톰슨 호텔 ➔ EWR 공항 상세 동선 🚆</div>
+    </div>
+
+    <div class="transit-step-list">
+      <div class="transit-step">
+        <div class="step-num-circle">1</div>
+        <div class="step-content">
+          <h4>호텔에서 57 St-7 Av 지하철역 도보 (2분)</h4>
+          <p>18:30에 호텔에서 짐을 찾은 후, 56번가를 따라 7번가 쪽으로 2분 걸어 <strong>57 St-7 Av 지하철역</strong>으로 진입합니다.</p>
+          <a href="https://www.google.com/maps/dir/?api=1&destination=57+St+-+7+Av+Subway+Station,+New+York,+NY&travelmode=walking" target="_blank" class="place-link subway-link">📍 역 입구 도보 길찾기</a>
+        </div>
+      </div>
+
+      <div class="transit-step">
+        <div class="step-num-circle">2</div>
+        <div class="step-content">
+          <h4>지하철 N/Q/R 타고 34 St-Herald Sq 하차</h4>
+          <p><strong>Downtown / Brooklyn 방향 N, Q, R선</strong>을 타고 34 St-Herald Sq 역에서 하차합니다 (약 7분 소요). 지하 연결통로나 32번가 지상 통로를 통해 맞은편 <strong>New York Penn Station</strong>으로 이동합니다.</p>
+        </div>
+      </div>
+
+      <div class="transit-step">
+        <div class="step-num-circle">3</div>
+        <div class="step-content">
+          <h4>Penn Station ➔ NJ Transit 기차 탑승</h4>
+          <p>전광판에서 <strong>EWR Airport (Newark Airport)</strong>에 정차하는 NJ Transit 열차 트랙을 확인 후 탑승합니다 (~25분 소요). 퇴근길 교통 정체 없이 정시 이동합니다.</p>
+        </div>
+      </div>
+
+      <div class="transit-step">
+        <div class="step-num-circle">4</div>
+        <div class="step-content">
+          <h4>AirTrain 타고 해당 터미널 도착 (오후 7:50 도착)</h4>
+          <p>기차역 하차 후 <strong>AirTrain</strong>으로 환승하여 본인 항공편(Frontier) 터미널로 이동하면 <strong>오후 7:50~8:00</strong>에 여유 있게 도착합니다 (10:29 PM 비행기 탑승 준비 완료!).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    💍 Jungweon's Bachelorette Party in NYC 🗽✨<br>
+    따스한 아이보리 종이와 빈티지 로즈로 완성된 뉴욕 여행 가이드! 🌸
+  </div>
+
+  <!-- Floating Quick Back Button (Appears when scrolled to bottom guides) -->
+  <button id="floating-back-btn" class="floating-back-btn" onclick="returnToLastAnchor()">
+    <span>↩️ 일정으로 복귀</span>
+  </button>
+
+<script>
+(function() {
+  var STORAGE_KEY = 'nycbach-checked-v1';
+  var checked = {};
+  var lastAnchorId = 'day1'; // default
+
+  try {
+    checked = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch (e) { checked = {}; }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checked)); } catch (e) {}
+  }
+
+  function updateProgress() {
+    ['day1', 'day2'].forEach(function(day) {
+      var items = document.querySelectorAll('#' + day + ' .timeline-item[data-id]');
+      var done = 0;
+      items.forEach(function(el) { if (checked[el.getAttribute('data-id')]) done++; });
+      var el = document.getElementById('progress-' + day);
+      if (el) el.textContent = done + ' / ' + items.length + ' 완료';
+    });
+  }
+
+  window.toggleDone = function(btn) {
+    var item = btn.closest('.timeline-item');
+    var id = item.getAttribute('data-id');
+    checked[id] = !checked[id];
+    item.classList.toggle('done', !!checked[id]);
+    save();
+    updateProgress();
+  };
+
+  window.switchDay = function(target, btn) {
+    // 1. 패널 전환
+    document.querySelectorAll('.day-panel').forEach(function(p) { p.classList.remove('active'); });
+    var targetPanel = document.getElementById(target);
+    if (targetPanel) targetPanel.classList.add('active');
+
+    // 2. 탭 버튼 활성화
+    document.querySelectorAll('.day-tab').forEach(function(t) { t.classList.remove('active'); });
+    if (!btn) {
+      btn = document.querySelector('.day-tab[data-target="' + target + '"]');
+    }
+    if (btn) btn.classList.add('active');
+
+    try { localStorage.setItem('nycbach-lastday', target); } catch (e) {}
+
+    // 3. 맨 위(상단 헤더/탭 영역)로 무조건 확실하게 스크롤 이동
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
+  // Remember exact spot before jumping down to transit/policy
+  window.saveReturnAnchor = function(sourceId) {
+    lastAnchorId = sourceId || 'day1';
+  };
+
+  // Return to the exact timeline item or day view
+  window.returnToLastAnchor = function() {
+    var activeDay = localStorage.getItem('nycbach-lastday') || 'day1';
+    var panel = document.getElementById(activeDay);
+    if (panel) {
+      panel.classList.add('active');
+      var tabBtn = document.querySelector('.day-tab[data-target="' + activeDay + '"]');
+      if (tabBtn) {
+        document.querySelectorAll('.day-tab').forEach(function(t) { t.classList.remove('active'); });
+        tabBtn.classList.add('active');
+      }
+    }
+
+    if (lastAnchorId && document.getElementById(lastAnchorId)) {
+      var targetEl = document.getElementById(lastAnchorId);
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // highlight briefly
+      targetEl.style.transition = 'box-shadow 0.3s';
+      targetEl.style.boxShadow = '0 0 0 4px var(--dr-primary)';
+      setTimeout(function() {
+        targetEl.style.boxShadow = '';
+      }, 1200);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Floating Back Button visibility observer
+  var floatingBtn = document.getElementById('floating-back-btn');
+  window.addEventListener('scroll', function() {
+    var transitIn = document.getElementById('transit-in');
+    var bagPolicy = document.getElementById('bag-policy');
+    var triggerTop = bagPolicy ? bagPolicy.getBoundingClientRect().top : 1000;
+    if (triggerTop <= window.innerHeight * 0.7) {
+      floatingBtn.classList.add('show');
+    } else {
+      floatingBtn.classList.remove('show');
+    }
+  });
+
+  // Restore checked state
+  document.querySelectorAll('.timeline-item[data-id]').forEach(function(el) {
+    if (checked[el.getAttribute('data-id')]) el.classList.add('done');
+  });
+  updateProgress();
+
+  // Restore last viewed day
+  try {
+    var lastDay = localStorage.getItem('nycbach-lastday');
+    if (lastDay && document.getElementById(lastDay)) {
+      var tabBtn = document.querySelector('.day-tab[data-target="' + lastDay + '"]');
+      if (tabBtn) switchDay(lastDay, tabBtn);
+    }
+  } catch (e) {}
+
+  // "지금 뭐하지" 실시간 자동 매칭 배너
+  var schedule = [
+    { day: 'Day 1', start: '2026-10-06T05:30:00', end: '2026-10-06T07:00:00', title: '공항 집결 및 이동' },
+    { day: 'Day 1', start: '2026-10-06T08:11:00', end: '2026-10-06T10:32:00', title: 'ATL ➔ EWR 비행' },
+    { day: 'Day 1', start: '2026-10-06T12:00:00', end: '2026-10-06T12:20:00', title: '호텔 도착 & 짐 보관' },
+    { day: 'Day 1', start: '2026-10-06T12:35:00', end: '2026-10-06T13:40:00', title: "Joe's Soup Dumplings 점심" },
+    { day: 'Day 1', start: '2026-10-06T13:52:00', end: '2026-10-06T14:15:00', title: 'Zibetto 커피 타임' },
+    { day: 'Day 1', start: '2026-10-06T14:20:00', end: '2026-10-06T16:30:00', title: '호텔 체크인 & 콘서트 단장' },
+    { day: 'Day 1', start: '2026-10-06T17:00:00', end: '2026-10-06T17:45:00', title: 'LOS TACOS No.1 저녁' },
+    { day: 'Day 1', start: '2026-10-06T17:50:00', end: '2026-10-06T19:15:00', title: 'Cafe Grumpy 휴식' },
+    { day: 'Day 1', start: '2026-10-06T19:30:00', end: '2026-10-06T22:30:00', title: 'MONSTA X 콘서트' },
+    { day: 'Day 1', start: '2026-10-06T22:30:00', end: '2026-10-06T23:00:00', title: '호텔 복귀' },
+    { day: 'Day 2', start: '2026-10-07T08:30:00', end: '2026-10-07T10:00:00', title: '호텔 조식' },
+    { day: 'Day 2', start: '2026-10-07T11:30:00', end: '2026-10-07T12:20:00', title: '아폴로 베이글' },
+    { day: 'Day 2', start: '2026-10-07T12:25:00', end: '2026-10-07T13:05:00', title: '매그놀리아 & 아아' },
+    { day: 'Day 2', start: '2026-10-07T13:10:00', end: '2026-10-07T14:05:00', title: "L'Industrie 피자" },
+    { day: 'Day 2', start: '2026-10-07T14:15:00', end: '2026-10-07T15:00:00', title: 'Pommes Frites 감자튀김' },
+    { day: 'Day 2', start: '2026-10-07T15:15:00', end: '2026-10-07T16:30:00', title: 'Lysée 디저트 타임' },
+    { day: 'Day 2', start: '2026-10-07T17:00:00', end: '2026-10-07T18:10:00', title: '감미옥 저녁' },
+    { day: 'Day 2', start: '2026-10-07T18:30:00', end: '2026-10-07T18:45:00', title: '호텔 짐 픽업' },
+    { day: 'Day 2', start: '2026-10-07T22:29:00', end: '2026-10-08T01:00:00', title: 'ATL 귀국 비행' }
+  ];
+
+  function checkLive() {
+    var now = new Date();
+    var banner = document.getElementById('live-banner');
+    var text = document.getElementById('live-banner-text');
+    var match = schedule.find(function(s) {
+      return now >= new Date(s.start) && now <= new Date(s.end);
+    });
+    if (match) {
+      text.textContent = '지금 진행 중 (' + match.day + ') · ' + match.title;
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+  checkLive();
+  setInterval(checkLive, 60000);
+})();
+</script>
+
+</body>
+</html>

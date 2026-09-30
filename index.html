@@ -91,7 +91,7 @@
     font-weight: 600;
   }
 
-  /* ---------- Ticket-Stub Style Day Tabs & 2x2 Quick Buttons ---------- */
+  /* ---------- Ticket-Stub Style Day Tabs & Quick Buttons ---------- */
   .tab-wrapper {
     position: sticky;
     top: 6px;
@@ -140,10 +140,10 @@
   .day-tab::before { left: -5px; }
   .day-tab::after { right: -5px; }
 
-  /* 2x2 Grid Buttons */
+  /* Quick Buttons Grid (Direct Google Sheets Link Included) */
   .quick-links-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
     margin-top: 8px;
   }
@@ -153,9 +153,9 @@
     justify-content: center;
     gap: 4px;
     text-decoration: none;
-    font-size: 0.76rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    padding: 8px 6px;
+    padding: 8px 4px;
     border-radius: 12px;
     color: var(--dr-primary-dark);
     background: var(--paper-card);
@@ -163,6 +163,12 @@
     box-shadow: 0 2px 6px rgba(120, 47, 60, 0.05);
     white-space: nowrap;
     transition: all 0.15s;
+  }
+  .quick-chip.sheets-chip {
+    background: #eef7f2;
+    border-color: #a4ceb5;
+    color: #1f6843;
+    font-weight: 800;
   }
   .quick-chip:active {
     background: var(--paper-inner);
@@ -232,7 +238,6 @@
     letter-spacing: -0.2px;
   }
 
-  /* Return to Previous Schedule Banner Button */
   .return-to-timeline-bar {
     display: flex;
     align-items: center;
@@ -375,7 +380,6 @@
     box-shadow: 0 0 0 4px #ead3cd;
   }
 
-  /* Checked State */
   .timeline-item.done {
     background: #eae3da;
     opacity: 0.58;
@@ -443,7 +447,6 @@
   .tag-train { background: #e7f2eb; color: #26653d; }
   .tag-pick { background: #f7e2e2; color: #942533; }
 
-  /* Map Link Button */
   .place-link {
     display: inline-flex;
     align-items: center;
@@ -486,10 +489,7 @@
     border-left: 3.5px solid var(--dr-primary);
   }
 
-  /* IMPROVED: Noticeable Collapsible Subway Button */
-  details.subway-detail {
-    margin-top: 8px;
-  }
+  details.subway-detail { margin-top: 8px; }
   details.subway-detail summary {
     list-style: none;
     cursor: pointer;
@@ -508,25 +508,13 @@
     transition: all 0.2s;
   }
   details.subway-detail summary::-webkit-details-marker { display: none; }
-  details.subway-detail summary:active {
-    background: #bcd6e5;
-  }
-  .subway-summary-badge {
-    background: #245774;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 0.7rem;
-    font-weight: 800;
-  }
+  details.subway-detail summary:active { background: #bcd6e5; }
   .subway-toggle-icon {
     font-size: 0.85rem;
     color: #245774;
     transition: transform 0.2s;
   }
-  details.subway-detail[open] .subway-toggle-icon {
-    transform: rotate(180deg);
-  }
+  details.subway-detail[open] .subway-toggle-icon { transform: rotate(180deg); }
 
   .subway-guide-box {
     background: #f4f8fb;
@@ -552,7 +540,6 @@
     color: var(--dr-primary-dark);
   }
 
-  /* Bag Policy Box */
   .bag-alert {
     background: var(--paper-inner);
     border: 1.5px solid var(--dr-border);
@@ -570,7 +557,6 @@
     margin-bottom: 8px;
   }
 
-  /* Flight Info Card */
   .flight-box {
     background: #fff;
     border: 1.5px solid var(--dr-border);
@@ -621,7 +607,6 @@
     border: 1px solid var(--dr-border-soft);
   }
 
-  /* Transit Step Guide */
   .transit-step-list {
     display: flex;
     flex-direction: column;
@@ -671,7 +656,6 @@
     font-weight: 700;
   }
 
-  /* Sticky Back to Timeline Button */
   .floating-back-btn {
     display: none;
     position: fixed;
@@ -705,13 +689,13 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="header-decor">🌸 🎀 🥂 👰‍♀️ 💖 ✨</div>
+    <div class="header-decor">🌸 🎀 🥂 👰‍♀️️ 💖 ✨</div>
     <div class="header-badge">Jungweon's Bachelorette Party 💍</div>
     <h1>NYC Trip Itinerary 🗽</h1>
     <p>2026. 10. 06 (화) – 10. 07 (수) 모바일 가이드</p>
   </header>
 
-  <!-- Ticket-Stub Day Tabs & 2x2 Clean Fitted Reference Buttons -->
+  <!-- Ticket-Stub Day Tabs & Quick Buttons -->
   <div class="tab-wrapper">
     <div class="day-tabs">
       <button class="day-tab active" data-target="day1" onclick="switchDay('day1', this)">
@@ -726,10 +710,11 @@
       </button>
     </div>
 
-    <!-- 2x2 Grid: No Scrolling, 100% Screen Fit -->
+    <!-- Quick Links Grid with Direct Google Sheets Link -->
     <div class="quick-links-grid">
-      <a class="quick-chip" href="#bag-policy" onclick="saveReturnAnchor('bag-policy')">🎒 가방 규정</a>
-      <a class="quick-chip" href="#flight-info" onclick="saveReturnAnchor('flight-info')">✈️ 항공편 인포</a>
+      <a class="quick-chip sheets-chip" href="YOUR_GOOGLE_SHEET_URL_HERE" target="_blank" rel="noopener">📊 N빵 정산시트</a>
+      <a class="quick-chip" href="#flight-info" onclick="saveReturnAnchor('flight-info')">✈️ 항공편</a>
+      <a class="quick-chip" href="#bag-policy" onclick="saveReturnAnchor('bag-policy')">🎒 가방규정</a>
       <a class="quick-chip" href="#transit-in" onclick="saveReturnAnchor('transit-in')">🚇 EWR➔호텔</a>
       <a class="quick-chip" href="#transit-out" onclick="saveReturnAnchor('transit-out')">🚆 호텔➔EWR</a>
     </div>
@@ -764,19 +749,14 @@
               </filter>
             </defs>
 
-            <!-- Water Background -->
             <rect width="380" height="320" fill="#dbe6eb" />
             <text x="14" y="160" font-size="8.5" fill="#587988" font-weight="800" letter-spacing="1" transform="rotate(-90 14,160)">HUDSON RIVER</text>
             <text x="372" y="160" font-size="8.5" fill="#587988" font-weight="800" letter-spacing="1" transform="rotate(90 372,160)">EAST RIVER</text>
 
-            <!-- Manhattan Island -->
             <path d="M 40,0 L 340,0 L 330,320 L 55,320 Z" fill="#fffdfa" stroke="#debdb8" stroke-width="1.5" />
-
-            <!-- Central Park -->
             <rect x="110" y="0" width="160" height="50" rx="4" fill="#cbdad2" stroke="#a2bdaf" stroke-width="1" />
             <text x="190" y="28" font-size="10.5" font-weight="800" fill="#2d5743" text-anchor="middle">🌳 CENTRAL PARK</text>
 
-            <!-- Major Avenues -->
             <line x1="100" y1="50" x2="100" y2="320" stroke="#f6ede9" stroke-width="6" />
             <line x1="100" y1="50" x2="100" y2="320" stroke="#e8d5ce" stroke-width="1.5" />
             <text x="96" y="312" font-size="7" fill="#8f7375" font-weight="700">8th Ave</text>
@@ -793,11 +773,9 @@
             <line x1="260" y1="50" x2="260" y2="320" stroke="#e8d5ce" stroke-width="1.5" />
             <text x="256" y="312" font-size="7" fill="#8f7375" font-weight="700">5th Ave</text>
 
-            <!-- Broadway -->
             <line x1="130" y1="50" x2="235" y2="320" stroke="#f6e1ba" stroke-width="4.5" stroke-linecap="round" />
             <text x="175" y="170" font-size="7.5" fill="#9e6e23" font-weight="800" transform="rotate(69 175,170)">BROADWAY</text>
 
-            <!-- Cross Streets -->
             <line x1="50" y1="68" x2="330" y2="68" stroke="#debdb8" stroke-width="2" />
             <text x="56" y="64" font-size="7.5" fill="#75474d" font-weight="800">W 57th St</text>
 
@@ -810,7 +788,6 @@
             <line x1="50" y1="240" x2="330" y2="240" stroke="#debdb8" stroke-width="2.5" />
             <text x="56" y="236" font-size="7.5" fill="#75474d" font-weight="800">34th St (Herald Sq / MSG)</text>
 
-            <!-- Route Path Lines -->
             <path d="M 180,78 L 265,128" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
             <path d="M 265,128 L 205,78" fill="none" stroke="#af5b69" stroke-width="2.5" stroke-dasharray="3,3" stroke-linecap="round" />
             <path d="M 205,78 L 180,78" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
@@ -821,7 +798,6 @@
             <path d="M 148,272 L 120,244" fill="none" stroke="#af5b69" stroke-width="3" stroke-linecap="round" />
             <path d="M 120,244 Q 165,150 180,78" fill="none" stroke="#326782" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3" />
 
-            <!-- PINS -->
             <g transform="translate(180, 78)" filter="url(#pinShadow)">
               <circle cx="0" cy="0" r="11" fill="#782f3c" stroke="#fff" stroke-width="2" />
               <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">1,4,8</text>
@@ -951,7 +927,7 @@
         <div class="timeline-item" id="item-d1-09" data-id="d1-09">
           <button class="item-check" onclick="toggleDone(this)" aria-label="완료 체크"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-6" stroke-width="1.8" fill="none"/></svg></button>
           <div class="item-time">02:15 – 02:18 PM</div>
-          <div class="item-title-row"><span class="item-title">이동 (도보 2분) 🚶‍♀️</span><span class="item-tag tag-trans">도보</span></div>
+          <div class="item-title-row"><span class="item-title">이동 (도보 2분) 🚶‍♀️️</span><span class="item-tag tag-trans">도보</span></div>
           <div class="item-desc">Zibetto 나와서 반 블록 걸어 호텔 룸으로 복귀</div>
         </div>
 
@@ -968,7 +944,6 @@
           <div class="item-title-row"><span class="item-title">지하철 이동 (15분) 🚇</span><span class="item-tag tag-train">지하철</span></div>
           <a href="https://www.google.com/maps/dir/?api=1&destination=57+St+-+7+Av+Subway+Station,+New+York,+NY&travelmode=walking" target="_blank" class="place-link subway-link">📍 1단계: 57 St-7 Av 역 출입구 도보 길찾기 (2분)</a>
           
-          <!-- IMPROVED COLLAPSIBLE SUBWAY BOX -->
           <details class="subway-detail">
             <summary>
               <span>🚇 지하철 탑승 및 출구 상세 안내</span>
@@ -1112,7 +1087,6 @@
             <line x1="210" y1="40" x2="230" y2="330" stroke="#f6e1ba" stroke-width="4.5" />
             <text x="232" y="130" font-size="7.5" fill="#9e6e23" font-weight="800">Broadway</text>
 
-            <!-- Route Path -->
             <path d="M 170,22 Q 120,90 100,205" fill="none" stroke="#326782" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3" />
             <text x="94" y="115" font-size="7.5" fill="#326782" font-weight="800">🚇 N/Q/R (지하철)</text>
 
@@ -1127,7 +1101,6 @@
 
             <path d="M 210,36 L 170,22" fill="none" stroke="#326782" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3,3" />
 
-            <!-- PINS -->
             <g transform="translate(170, 22)" filter="url(#pinShadow2)">
               <circle cx="0" cy="0" r="11" fill="#782f3c" stroke="#fff" stroke-width="2" />
               <text x="0" y="3.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">1,8</text>
@@ -1564,22 +1537,22 @@
     따스한 아이보리 종이와 빈티지 로즈로 완성된 뉴욕 여행 가이드! 🌸
   </div>
 
-  <!-- Floating Quick Back Button (Appears when scrolled to bottom guides) -->
+  <!-- Floating Quick Back Button -->
   <button id="floating-back-btn" class="floating-back-btn" onclick="returnToLastAnchor()">
-    <span>↩️ 일정으로 복귀</span>
+    <span>↩ 일정으로 복귀</span>
   </button>
 
 <script>
 (function() {
   var STORAGE_KEY = 'nycbach-checked-v1';
   var checked = {};
-  var lastAnchorId = 'day1'; // default
+  var lastAnchorId = 'day1';
 
   try {
     checked = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
   } catch (e) { checked = {}; }
 
-  function save() {
+  function saveChecked() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checked)); } catch (e) {}
   }
 
@@ -1598,17 +1571,15 @@
     var id = item.getAttribute('data-id');
     checked[id] = !checked[id];
     item.classList.toggle('done', !!checked[id]);
-    save();
+    saveChecked();
     updateProgress();
   };
 
   window.switchDay = function(target, btn) {
-    // 1. 패널 전환
     document.querySelectorAll('.day-panel').forEach(function(p) { p.classList.remove('active'); });
     var targetPanel = document.getElementById(target);
     if (targetPanel) targetPanel.classList.add('active');
 
-    // 2. 탭 버튼 활성화
     document.querySelectorAll('.day-tab').forEach(function(t) { t.classList.remove('active'); });
     if (!btn) {
       btn = document.querySelector('.day-tab[data-target="' + target + '"]');
@@ -1616,19 +1587,13 @@
     if (btn) btn.classList.add('active');
 
     try { localStorage.setItem('nycbach-lastday', target); } catch (e) {}
-
-    // 3. 맨 위(상단 헤더/탭 영역)로 무조건 확실하게 스크롤 이동
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
   };
 
-  // Remember exact spot before jumping down to transit/policy
   window.saveReturnAnchor = function(sourceId) {
     lastAnchorId = sourceId || 'day1';
   };
 
-  // Return to the exact timeline item or day view
   window.returnToLastAnchor = function() {
     var activeDay = localStorage.getItem('nycbach-lastday') || 'day1';
     var panel = document.getElementById(activeDay);
@@ -1644,7 +1609,6 @@
     if (lastAnchorId && document.getElementById(lastAnchorId)) {
       var targetEl = document.getElementById(lastAnchorId);
       targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // highlight briefly
       targetEl.style.transition = 'box-shadow 0.3s';
       targetEl.style.boxShadow = '0 0 0 4px var(--dr-primary)';
       setTimeout(function() {
@@ -1655,10 +1619,8 @@
     }
   };
 
-  // Floating Back Button visibility observer
   var floatingBtn = document.getElementById('floating-back-btn');
   window.addEventListener('scroll', function() {
-    var transitIn = document.getElementById('transit-in');
     var bagPolicy = document.getElementById('bag-policy');
     var triggerTop = bagPolicy ? bagPolicy.getBoundingClientRect().top : 1000;
     if (triggerTop <= window.innerHeight * 0.7) {
@@ -1668,7 +1630,7 @@
     }
   });
 
-  // Restore checked state
+  // Restore checked items
   document.querySelectorAll('.timeline-item[data-id]').forEach(function(el) {
     if (checked[el.getAttribute('data-id')]) el.classList.add('done');
   });

@@ -683,6 +683,88 @@
     align-items: center;
     gap: 6px;
   }
+
+ /* ---------- Weather Modal (상세 날씨 & 12시간 한눈에 보기) ---------- */
+  .weather-modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(56, 36, 39, 0.45);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+  .weather-modal-card {
+    background: var(--paper-card);
+    border: 1.8px solid var(--dr-border);
+    border-radius: 22px;
+    width: 100%;
+    max-width: 440px;
+    padding: 16px 14px;
+    box-shadow: 0 10px 30px rgba(120, 47, 60, 0.2);
+    animation: popUp 0.25s ease-out;
+  }
+  .weather-modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1.5px dashed var(--dr-border);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .weather-modal-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--dr-primary-dark);
+  }
+  .weather-close-btn {
+    background: #fff;
+    border: 1.2px solid var(--dr-border);
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* 현재 상세 서브 정보 칩 */
+  .weather-sub-chips {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+  }
+  .weather-sub-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--dr-primary-dark);
+    background: var(--paper-inner);
+    border: 1px solid var(--dr-border-soft);
+    padding: 3px 8px;
+    border-radius: 8px;
+  }
+  /* 12시간 6열 x 2행 그리드 */
+  .hourly-grid-12 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+  }
+  .hourly-item-compact {
+    background: var(--paper-inner);
+    border: 1px solid var(--dr-border-soft);
+    border-radius: 10px;
+    padding: 6px 2px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 </style>
 </head>
 <body>
@@ -717,6 +799,7 @@
       <a class="quick-chip" href="#bag-policy" onclick="saveReturnAnchor('bag-policy')">🎒 가방규정</a>
       <a class="quick-chip" href="#transit-in" onclick="saveReturnAnchor('transit-in')">🚇 EWR➔호텔</a>
       <a class="quick-chip" href="#transit-out" onclick="saveReturnAnchor('transit-out')">🚆 호텔➔EWR</a>
+      <button type="button" class="quick-chip" onclick="openWeatherModal()">☀️ 실시간 날씨</button>
     </div>
 
     <!-- Live "지금 뭐하지" Banner -->
@@ -1686,6 +1769,115 @@
   setInterval(checkLive, 60000);
 })();
 </script>
+<!-- Weather Modal Window -->
+  <div id="weatherModal" class="weather-modal-backdrop" onclick="closeWeatherModal(event)">
+    <div class="weather-modal-card" onclick="event.stopPropagation()">
+      <div class="weather-modal-head">
+        <span class="weather-modal-title">☀️ 뉴욕 맨해튼 시간별 날씨</span>
+        <button type="button" class="weather-close-btn" onclick="closeWeatherModal()">&times;</button>
+      </div>
+      <div id="weatherContent">
+        <div style="text-align:center; padding: 25px 0; color:var(--text-muted); font-size:0.85rem;">
+          날씨 정보를 불러오는 중입니다...
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <script>
+   var weatherIcons = {
+      0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+      45: '🌫️', 48: '🌫️',
+      51: '🌦️', 53: '🌧️', 55: '🌧️',
+      61: '🌧️', 63: '🌧️', 65: '🌧️',
+      71: '🌨️', 73: '🌨️', 75: '❄️',
+      80: '🌦️', 81: '🌧️', 82: '⛈️',
+      95: '⛈️'
+    };
+
+    window.openWeatherModal = async function() {
+      var modal = document.getElementById('weatherModal');
+      modal.style.display = 'flex';
+      var container = document.getElementById('weatherContent');
+
+      try {
+        var url = 'https://api.open-meteo.com/v1/forecast?latitude=40.7580&longitude=-73.9855'
+          + '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m'
+          + '&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m'
+          + '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch'
+          + '&timezone=America%2FNew_York&forecast_days=2';
+
+        var res = await fetch(url);
+        var data = await res.json();
+
+        // 1. 현재 날짜/시간 포맷 (맨해튼 기준)
+        var curDateStr = data.current.time; // "2026-10-06T14:00"
+        var curD = new Date(curDateStr);
+        var days = ['일', '월', '화', '수', '목', '금', '토'];
+        var dateFormatted = (curD.getMonth() + 1) + '월 ' + curD.getDate() + '일 (' + days[curD.getDay()] + ')';
+
+        // 2. 현재 상태값
+        var curTemp = Math.round(data.current.temperature_2m);
+        var curFeels = Math.round(data.current.apparent_temperature);
+        var curHumidity = data.current.relative_humidity_2m;
+        var curWind = Math.round(data.current.wind_speed_10m);
+        var curIcon = weatherIcons[data.current.weather_code] || '☀️';
+
+        // 3. 시간별 데이터 인덱스 탐색
+        var times = data.hourly.time;
+        var temps = data.hourly.temperature_2m;
+        var pops = data.hourly.precipitation_probability;
+        var codes = data.hourly.weather_code;
+        var winds = data.hourly.wind_speed_10m;
+
+        var curHourPrefix = curDateStr.slice(0, 13);
+        var startIdx = times.findIndex(function(t) { return t.startsWith(curHourPrefix); });
+        if (startIdx === -1) startIdx = 0;
+
+        // 4. 12시간 카드 구성
+        var cards = '';
+        for (var i = startIdx; i < startIdx + 12 && i < times.length; i++) {
+          var h = parseInt(times[i].slice(11, 13), 10);
+          var ampm = h >= 12 ? 'P' : 'A';
+          var dh = h % 12 === 0 ? 12 : h % 12;
+          var icon = weatherIcons[codes[i]] || '🌤️';
+          var temp = Math.round(temps[i]);
+          var pop = pops[i] || 0;
+          var wind = Math.round(winds[i]);
+
+          cards += '<div class="hourly-item-compact">' +
+            '<div style="font-size:0.65rem; color:var(--text-muted); font-family:Nunito,sans-serif; font-weight:800;">' + dh + ampm + '</div>' +
+            '<div style="font-size:1.15rem; margin:1px 0;">' + icon + '</div>' +
+            '<div style="font-weight:900; font-size:0.8rem; color:var(--dr-primary-dark); font-family:Nunito,sans-serif;">' + temp + '°</div>' +
+            '<div style="font-size:0.63rem; font-weight:700; color:' + (pop >= 30 ? '#215674' : '#a08587') + '; font-family:Nunito,sans-serif; margin-top:1px;">💧' + pop + '%</div>' +
+            '<div style="font-size:0.6rem; color:#888; font-family:Nunito,sans-serif;">🍃' + wind + 'm</div>' +
+          '</div>';
+        }
+
+        container.innerHTML = 
+          '<div style="text-align:center;">' +
+            '<div style="font-size:0.75rem; color:var(--dr-primary-dark); font-weight:800; margin-bottom:2px;">📍 맨해튼 미드타운 · ' + dateFormatted + '</div>' +
+            '<div style="margin: 2px 0;">' +
+              '<span style="font-size:1.8rem; vertical-align:middle;">' + curIcon + '</span>' +
+              '<span style="font-size:1.85rem; font-weight:900; font-family:Nunito,sans-serif; color:var(--text-main); margin-left:6px; vertical-align:middle;">' + curTemp + '°F</span>' +
+            '</div>' +
+            '<div class="weather-sub-chips">' +
+              '<span class="weather-sub-chip">체감 ' + curFeels + '°F</span>' +
+              '<span class="weather-sub-chip">습도 ' + curHumidity + '%</span>' +
+              '<span class="weather-sub-chip">바람 ' + curWind + ' mph</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="hourly-grid-12">' + cards + '</div>';
+      } catch (e) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--dr-primary); font-size:0.82rem;">날씨 정보를 가져올 수 없습니다.</div>';
+      }
+    };
+
+    window.closeWeatherModal = function(e) {
+      if (!e || e.target.id === 'weatherModal') {
+        document.getElementById('weatherModal').style.display = 'none';
+      }
+    };
+  </script>
 </body>
 </html>
